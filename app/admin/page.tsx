@@ -4,6 +4,7 @@ import { AdminPanel } from "@/components/forms/admin-panel";
 import { isAuthenticated } from "@/lib/auth";
 import { getAdminData } from "@/lib/services/dashboard";
 
+
 export default async function AdminPage() {
   const authenticated = await isAuthenticated();
 
