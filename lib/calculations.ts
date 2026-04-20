@@ -1,5 +1,11 @@
 import { differenceInCalendarDays, isAfter, isBefore } from "date-fns";
-import { getPeriodProgressPct, getWeeklyBuckets, toDateString, formatWeekLabel } from "@/lib/date";
+import {
+  getPeriodProgressPct,
+  getWeeklyBuckets,
+  toDateString,
+  formatWeekLabel,
+  parseDateString
+} from "@/lib/date";
 import type {
   GlobalSettingsRecord,
   ParticipantDashboard,
@@ -44,8 +50,8 @@ function calculateTheoreticalWeight(
   endDate: string,
   date: Date
 ) {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = parseDateString(startDate);
+  const end = parseDateString(endDate);
 
   if (isBefore(date, start)) {
     return startWeight;
@@ -66,9 +72,10 @@ export function buildParticipantDashboard(params: {
   settings: GlobalSettingsRecord;
   entries: WeightEntryRecord[];
   messagePoolSize: number;
+  currentDate: Date;
 }): ParticipantDashboard {
-  const { profile, settings, entries, messagePoolSize } = params;
-  const weeklyBuckets = getWeeklyBuckets(settings.start_date, settings.end_date);
+  const { profile, settings, entries, messagePoolSize, currentDate } = params;
+  const weeklyBuckets = getWeeklyBuckets(settings.start_date, settings.end_date, currentDate);
 
   const chart: WeeklyPoint[] = weeklyBuckets.map((bucket) => {
     const bucketEntries = entries.filter(
@@ -112,7 +119,7 @@ export function buildParticipantDashboard(params: {
   const latestWeekly = history[0];
   const currentWeeklyWeight = latestWeekly?.averageWeight ?? Number(profile.start_weight);
   const theoreticalProgressPct = clamp(
-    getPeriodProgressPct(settings.start_date, settings.end_date),
+    getPeriodProgressPct(settings.start_date, settings.end_date, currentDate),
     0,
     100
   );

@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { ACCESS_COOKIE_NAME } from "@/lib/constants";
-import { getAuthEnv, getEnv } from "@/lib/env";
+import { getAuthEnv, getCronEnv } from "@/lib/env";
 
 function createAccessToken() {
   return `site-access:${getAuthEnv().SESSION_SECRET}`;
@@ -49,7 +49,7 @@ export function requestHasSiteAccess(request: NextRequest) {
 }
 
 export function requestHasCronAccess(request: NextRequest) {
-  return request.headers.get("authorization") === `Bearer ${getEnv().CRON_SECRET}`;
+  return request.headers.get("authorization") === `Bearer ${getCronEnv().CRON_SECRET}`;
 }
 
 export function requireSiteAccessOrThrow(request: NextRequest) {

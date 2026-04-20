@@ -1,7 +1,9 @@
 import { differenceInCalendarDays } from "date-fns";
 import { PERSON_EMAIL_ENV_KEYS } from "@/lib/constants";
-import { getEnv } from "@/lib/env";
 import { buildParticipantDashboard } from "@/lib/calculations";
+import { DEV_SCENARIOS } from "@/lib/default-seed";
+import { getSerializableAppDateContext, parseDateString } from "@/lib/date";
+import { areDevToolsEnabled, getRuntimeSettings } from "@/lib/runtime";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import type {
   AdminPayload,
@@ -43,14 +45,19 @@ export async function getBaseData() {
 }
 
 export async function getDashboardData(): Promise<DashboardPayload> {
-  const { settings, profiles, entries, messages } = await getBaseData();
+  const [{ settings, profiles, entries, messages }, dateContext] = await Promise.all([
+    getBaseData(),
+    getSerializableAppDateContext()
+  ]);
+  const currentDate = parseDateString(dateContext.currentDate);
 
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: dateContext.currentDate,
+    dateContext,
     period: {
       startDate: settings.start_date,
       endDate: settings.end_date,
-      totalDays: differenceInCalendarDays(new Date(settings.end_date), new Date(settings.start_date)) + 1,
+      totalDays: differenceInCalendarDays(parseDateString(settings.end_date), parseDateString(settings.start_date)) + 1,
       tolerancePct: Number(settings.status_tolerance_pct)
     },
     participants: profiles.map((profile) =>
@@ -58,21 +65,31 @@ export async function getDashboardData(): Promise<DashboardPayload> {
         profile,
         settings,
         entries: entries.filter((entry) => entry.profile_id === profile.id),
-        messagePoolSize: messages.filter((message) => message.profile_id === profile.id).length
+        messagePoolSize: messages.filter((message) => message.profile_id === profile.id).length,
+        currentDate
       })
     )
   };
 }
 
 export async function getAdminData(): Promise<AdminPayload> {
-  const { settings, profiles, entries, messages } = await getBaseData();
-  const env = getEnv();
+  const [{ settings, profiles, entries, messages }, runtimeSettings, dateContext] = await Promise.all([
+    getBaseData(),
+    getRuntimeSettings(),
+    getSerializableAppDateContext()
+  ]);
 
   return {
     settings,
+    runtime: {
+      settings: runtimeSettings,
+      dateContext,
+      devToolsEnabled: areDevToolsEnabled(),
+      scenarios: DEV_SCENARIOS
+    },
     profiles: profiles.map((profile) => ({
       ...profile,
-      email: env[PERSON_EMAIL_ENV_KEYS[profile.slug]],
+      email: process.env[PERSON_EMAIL_ENV_KEYS[profile.slug]] ?? "",
       messages: messages.filter((message) => message.profile_id === profile.id)
     })),
     weightEntries: entries

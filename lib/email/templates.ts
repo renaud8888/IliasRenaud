@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { formatPercent, formatWeight } from "@/lib/utils";
 import type { ParticipantDashboard, ProgressStatus } from "@/lib/types";
 
@@ -17,15 +15,16 @@ export function buildWeeklySummaryEmail(params: {
   participant: ParticipantDashboard;
   counterpart?: ParticipantDashboard;
   motivation: string;
+  currentDateLabel: string;
 }) {
-  const { participant, counterpart, motivation } = params;
+  const { participant, counterpart, motivation, currentDateLabel } = params;
 
   return `
     <div style="font-family:Arial,sans-serif;background:#07111f;padding:24px;color:#f8fafc;">
       <div style="max-width:640px;margin:0 auto;background:#111827;border:1px solid #1f2937;border-radius:24px;padding:28px;">
         <p style="margin:0 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#94a3b8;">Résumé du lundi</p>
         <h1 style="margin:0 0 12px;font-size:30px;line-height:1.1;">${participant.firstName}, on garde le cap.</h1>
-        <p style="margin:0 0 24px;font-size:15px;color:#cbd5e1;">Semaine du ${format(new Date(), "d MMMM yyyy", { locale: fr })}</p>
+        <p style="margin:0 0 24px;font-size:15px;color:#cbd5e1;">Semaine du ${currentDateLabel}</p>
         <div style="display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:20px;">
           <div style="background:#0f172a;border-radius:18px;padding:16px;">
             <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">Poids hebdomadaire</div>

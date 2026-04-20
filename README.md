@@ -121,6 +121,8 @@ Le fichier [.env.example](/Users/Renaud_Lothaire/Downloads/IliasRenaud/.env.exam
 - `SITE_PASSWORD`: mot de passe global du site
 - `SESSION_SECRET`: secret utilisé pour signer le cookie d’accès
 - `APP_URL`: URL publique de l’application
+- `ENABLE_TEST_TOOLS`: active explicitement la section `Simulation & tests` hors développement
+- `APP_SIMULATED_NOW`: date ISO simulée injectée depuis l’environnement
 - `RENAUD_EMAIL`: email de destination de Renaud
 - `ILIAS_EMAIL`: email de destination de Ilias
 - `RESEND_API_KEY`: clé API Resend
@@ -136,6 +138,7 @@ Le fichier [.env.example](/Users/Renaud_Lothaire/Downloads/IliasRenaud/.env.exam
 2. Ouvrir l’éditeur SQL.
 3. Exécuter d’abord [sql/schema.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/schema.sql).
 4. Exécuter ensuite [sql/seed.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/seed.sql).
+5. Si la base existait déjà avant l’ajout des outils de simulation, exécuter aussi [sql/migrations/20260421_simulation_tools.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/migrations/20260421_simulation_tools.sql).
 
 Le seed configure immédiatement:
 
@@ -183,7 +186,78 @@ La page `/admin` permet de gérer sans toucher au code:
 - correction d’une pesée quotidienne
 - suppression d’une pesée quotidienne
 
+En développement, ou si `ENABLE_TEST_TOOLS=true`, l’admin expose aussi une section `Simulation & tests`.
+
 Le mot de passe est le même que pour le dashboard.
+
+## Simulation & tests
+
+Le projet inclut une couche dédiée de simulation pour éviter les manipulations SQL manuelles.
+
+### Date centralisée
+
+- toute la logique métier s’appuie sur `getCurrentAppDate()`
+- cette fonction peut retourner:
+  - la vraie date système
+  - une date simulée définie dans l’admin
+  - une date simulée injectée par `APP_SIMULATED_NOW`
+- un badge visuel apparaît dès qu’une date simulée est active
+
+### Sécurité
+
+- les outils de simulation sont désactivés en production par défaut
+- ils sont disponibles si:
+  - `NODE_ENV !== production`
+  - ou `ENABLE_TEST_TOOLS=true`
+- toutes les données générées pour les tests sont marquées `is_test_data=true`
+- les actions de reset ciblent ces données de test en priorité
+
+### Outils disponibles dans l’admin
+
+Carte `Date simulée`:
+
+- activer/désactiver la simulation
+- choisir une date précise
+- revenir immédiatement à la vraie date
+
+Carte `Scénarios de test`:
+
+- `A`: 14 jours de données propres
+- `B`: 30 jours avec quelques oublis
+- `C`: 60 jours avec progression réaliste
+- `D`: utilisateur en retard
+- `E`: utilisateur en avance
+- `F`: semaine incomplète
+- `G`: aucun poids depuis 3 jours
+- `H`: lundi midi simulé pour tester le mail hebdomadaire
+
+Carte `Génération de données`:
+
+- date de début / fin
+- fréquence d’encodage
+- tendance
+- bruit aléatoire réaliste
+- jours manquants
+- mode `replace` ou `ignore` si une pesée existe déjà
+
+Carte `Prévisualisation emails`:
+
+- preview du résumé hebdomadaire
+- preview du rappel d’oubli
+- envoi réel de test
+- dry-run indiquant à qui l’email partirait, pourquoi et avec quel HTML
+
+Carte `Reset / rollback`:
+
+- supprimer toutes les données de test
+- réinitialiser les données par défaut
+- vider uniquement les poids
+- restaurer la configuration initiale
+
+Carte `Snapshot`:
+
+- export JSON de l’état courant
+- restauration via script développeur
 
 ## Emails avec Resend
 
@@ -204,6 +278,20 @@ Le mot de passe est le même que pour le dashboard.
 - route: `/api/cron/check-missed-entries`
 - vérifie chaque jour si une personne n’a rien encodé depuis 3 jours
 - utilise la table `email_logs` pour éviter des rappels trop rapprochés
+
+### Tester les emails sans attendre
+
+Depuis `/admin` > `Simulation & tests`:
+
+- `Prévisualiser email hebdomadaire`
+- `Prévisualiser rappel oubli`
+- `Tester email hebdomadaire`
+- `Tester rappel oubli`
+
+Pour tester précisément le créneau du lundi midi:
+
+- activer une date simulée manuellement
+- ou injecter directement le scénario `H`
 
 ## Déploiement sur Vercel
 
@@ -262,6 +350,23 @@ curl -H "Authorization: Bearer votre-secret" http://localhost:3000/api/cron/chec
 - Ajuster les dates, poids de départ ou objectifs
 - Enregistrer
 
+### Activer le mode simulation
+
+- en local: il est disponible automatiquement
+- hors local: définir `ENABLE_TEST_TOOLS=true`
+- optionnellement définir `APP_SIMULATED_NOW=2026-08-17T12:00:00.000Z` pour forcer une date simulée depuis l’environnement
+
+### Générer de faux poids
+
+- ouvrir `/admin`
+- section `Simulation & tests`
+- utiliser `Scénarios de test` ou `Générer les poids fictifs`
+
+### Reset de la base de test
+
+- `/admin` > `Supprimer toutes les données de test`
+- ou `npm run reset:dev`
+
 ## Scripts utiles
 
 ```bash
@@ -270,6 +375,12 @@ npm run build
 npm run start
 npm run lint
 npm run typecheck
+npm run seed:dev
+npm run seed:scenario -- scenario-c
+npm run reset:dev
+npm run reset:weights
+npm run snapshot:export -- snapshot.dev.json
+npm run snapshot:restore -- snapshot.dev.json
 ```
 
 ## Notes de production
@@ -279,3 +390,4 @@ npm run typecheck
 - Les routes cron vérifient `CRON_SECRET`
 - Le service role Supabase n’est jamais exposé au client
 - Toute la logique serveur reste dans Next.js
+- Les outils de simulation sont explicitement protégés et ne sont pas destinés à la production courante

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, skipped: true, reason: "weekly_email_disabled" });
     }
 
-    if (!isWithinWeeklySendWindow(settings.weekly_email_hour_local)) {
+    if (!(await isWithinWeeklySendWindow(settings.weekly_email_hour_local))) {
       return NextResponse.json({
         success: true,
         skipped: true,

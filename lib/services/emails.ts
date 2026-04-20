@@ -1,9 +1,10 @@
 import { format, startOfWeek, subDays } from "date-fns";
+import { fr } from "date-fns/locale";
 import { PERSON_EMAIL_ENV_KEYS } from "@/lib/constants";
 import { buildMissedEntryReminderEmail, buildWeeklySummaryEmail } from "@/lib/email/templates";
 import { getResendClient } from "@/lib/email/resend";
-import { getEnv } from "@/lib/env";
-import { getTodayInTimezone, toDateString } from "@/lib/date";
+import { getEmailEnv } from "@/lib/env";
+import { getCurrentAppDate, parseDateString, toDateString } from "@/lib/date";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getDashboardData, getBaseData } from "@/lib/services/dashboard";
 import type { ParticipantDashboard, PersonSlug } from "@/lib/types";
@@ -23,16 +24,17 @@ async function logEmail(params: {
 }
 
 function getRecipientEmail(slug: PersonSlug) {
-  const env = getEnv();
+  const env = getEmailEnv();
   return env[PERSON_EMAIL_ENV_KEYS[slug]];
 }
 
 export async function sendWeeklySummaryEmails() {
-  const env = getEnv();
+  const env = getEmailEnv();
   const resend = getResendClient();
   const dashboard = await getDashboardData();
   const { profiles, messages } = await getBaseData();
-  const currentWeekStart = `${toDateString(startOfWeek(getTodayInTimezone(), { weekStartsOn: 1 }))}T00:00:00`;
+  const currentAppDate = parseDateString(dashboard.dateContext.currentDate);
+  const currentWeekStart = `${toDateString(startOfWeek(currentAppDate, { weekStartsOn: 1 }))}T00:00:00`;
   const supabase = getSupabaseAdmin();
 
   for (const participant of dashboard.participants) {
@@ -65,7 +67,8 @@ export async function sendWeeklySummaryEmails() {
       html: buildWeeklySummaryEmail({
         participant,
         counterpart,
-        motivation
+        motivation,
+        currentDateLabel: format(currentAppDate, "d MMMM yyyy")
       })
     });
 
@@ -80,7 +83,7 @@ export async function sendWeeklySummaryEmails() {
 
 async function hasRecentReminder(profileId: string, cooldownDays: number) {
   const supabase = getSupabaseAdmin();
-  const sinceDate = toDateString(subDays(getTodayInTimezone(), cooldownDays));
+  const sinceDate = toDateString(subDays(await getCurrentAppDate(), cooldownDays));
   const { data } = await supabase
     .from("email_logs")
     .select("id")
@@ -96,7 +99,7 @@ function getLatestEntryDateForProfile(profileId: string, entries: Array<{ profil
 }
 
 export async function sendMissedEntryReminders() {
-  const env = getEnv();
+  const env = getEmailEnv();
   const resend = getResendClient();
   const { settings, profiles, entries, messages } = await getBaseData();
 
@@ -104,7 +107,7 @@ export async function sendMissedEntryReminders() {
     return { sent: 0 };
   }
 
-  const today = getTodayInTimezone();
+  const today = await getCurrentAppDate();
   const reminderWindowStart = toDateString(subDays(today, 2));
   let sentCount = 0;
 
@@ -153,11 +156,12 @@ export function buildWeeklyEmailPreview(participant: ParticipantDashboard) {
   return buildWeeklySummaryEmail({
     participant,
     motivation: "Tu avances mieux quand tu restes simple, régulier et propre.",
-    counterpart: undefined
+    counterpart: undefined,
+    currentDateLabel: format(parseDateString("2026-05-01"), "d MMMM yyyy", { locale: fr })
   });
 }
 
-export function isWithinWeeklySendWindow(expectedLocalHour: string) {
-  const now = getTodayInTimezone();
+export async function isWithinWeeklySendWindow(expectedLocalHour: string) {
+  const now = await getCurrentAppDate();
   return format(now, "i") === "1" && format(now, "HH:00") === expectedLocalHour;
 }

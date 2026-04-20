@@ -29,7 +29,10 @@ export function ParticipantCard({
         : "Tu es dans le bon tempo";
 
   return (
-    <Card className="relative overflow-hidden border-none bg-transparent p-0 shadow-none">
+    <Card
+      id={`${participant.slug}-section`}
+      className="relative overflow-hidden border-none bg-transparent p-0 shadow-none scroll-mt-24"
+    >
       <div className="glass-card relative overflow-hidden rounded-[34px] p-5 md:p-7">
         <div
           className={`absolute inset-0 bg-gradient-to-br ${theme.gradient} opacity-[0.08]`}
@@ -37,16 +40,16 @@ export function ParticipantCard({
         <div className="absolute inset-x-0 top-0 h-px bg-white/12" />
         <div className="relative flex flex-col gap-8">
           <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="section-title">Athlète</p>
-            <h2 className="font-[var(--font-heading)] text-4xl font-bold md:text-5xl">{participant.firstName}</h2>
-            <div className="mt-3 flex items-center gap-3 text-sm text-slate-300">
-              {isLoss ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
-              <span>{isLoss ? "Objectif perte de poids" : "Objectif prise de poids"}</span>
+            <div>
+              <p className="section-title">Athlète</p>
+              <h2 className="font-[var(--font-heading)] text-4xl font-bold md:text-5xl">{participant.firstName}</h2>
+              <div className="mt-3 flex items-center gap-3 text-sm text-slate-300">
+                {isLoss ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
+                <span>{isLoss ? "Objectif perte de poids" : "Objectif prise de poids"}</span>
+              </div>
             </div>
+            <StatusBadge status={participant.status} />
           </div>
-          <StatusBadge status={participant.status} />
-        </div>
 
           <div className="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
             <ProgressGauge

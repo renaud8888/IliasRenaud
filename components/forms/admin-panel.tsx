@@ -3,8 +3,10 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PencilLine, Save, Trash2 } from "lucide-react";
+import { DevToolsPanel } from "@/components/forms/dev-tools-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SimulationBadge } from "@/components/ui/simulation-badge";
 import type { AdminPayload } from "@/lib/types";
 
 export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload }>) {
@@ -140,6 +142,8 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
 
   return (
     <div className="space-y-6">
+      <SimulationBadge dateContext={initialData.runtime.dateContext} />
+
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
           <div className="flex items-center justify-between gap-3">
@@ -353,6 +357,8 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
 
       {error ? <p className="text-sm text-red-300">{error}</p> : null}
       {success ? <p className="text-sm text-emerald-300">{success}</p> : null}
+
+      <DevToolsPanel runtime={initialData.runtime} profiles={initialData.profiles} />
     </div>
   );
 }

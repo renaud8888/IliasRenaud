@@ -3,7 +3,6 @@ import { AppShell } from "@/components/layout/app-shell";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 import { SetupState } from "@/components/ui/setup-state";
 import { isAuthenticated } from "@/lib/auth";
-import { getTodayInTimezone, toDateString } from "@/lib/date";
 import { getDashboardData } from "@/lib/services/dashboard";
 
 export default async function DashboardPage() {
@@ -13,14 +12,12 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const today = toDateString(getTodayInTimezone());
-
   try {
     const dashboard = await getDashboardData();
 
     return (
       <AppShell>
-        <DashboardView data={dashboard} today={today} />
+        <DashboardView data={dashboard} today={dashboard.dateContext.currentDate.slice(0, 10)} />
       </AppShell>
     );
   } catch (error) {

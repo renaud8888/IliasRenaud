@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CalendarRange, Flame, Target, TimerReset } from "lucide-react";
+import { ArrowDownRight, CalendarRange, TimerReset } from "lucide-react";
 import { ParticipantCard } from "@/components/dashboard/participant-card";
 import { Card } from "@/components/ui/card";
+import { SimulationBadge } from "@/components/ui/simulation-badge";
 import type { DashboardPayload } from "@/lib/types";
 
 export function DashboardView({
@@ -16,48 +17,52 @@ export function DashboardView({
 
   return (
     <div className="space-y-8">
+      <SimulationBadge dateContext={data.dateContext} />
       <Card className="overflow-hidden border-none bg-transparent p-0 shadow-none">
-        <div className="glass-card rounded-[34px] p-6 md:p-8">
-          <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
+        <div className="glass-card rounded-[34px] p-5 md:p-7">
+          <div className="max-w-4xl space-y-5">
             <div>
               <p className="section-title">Tableau de bord</p>
-              <h2 className="mt-2 max-w-3xl font-[var(--font-heading)] text-4xl font-bold md:text-6xl">
-                Voir tout le duel en 3 secondes.
+              <h2 className="mt-2 font-[var(--font-heading)] text-4xl font-bold md:text-6xl">
+                Voir où tu en es. Agir tout de suite.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-                Une seule question compte: qui tient sa trajectoire réelle face au cap théorique d’aujourd’hui. Le reste s’efface.
+              <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
+                Le duel se lit en un instant: progression réelle, objectif du jour, puis action immédiate.
               </p>
             </div>
+            <div className="flex flex-col gap-3 text-sm md:text-base">
+              <div className="flex flex-wrap items-center gap-2 rounded-[24px] bg-white/[0.05] px-4 py-3 text-slate-300">
+                <CalendarRange className="h-4 w-4" />
+                <span className="font-medium text-white">Période active</span>
+                <span>{data.period.startDate} au {data.period.endDate}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 rounded-[24px] bg-white/[0.05] px-4 py-3 text-slate-300">
+                <TimerReset className="h-4 w-4" />
+                <span className="font-medium text-white">Aujourd’hui</span>
+                <span>{today}</span>
+              </div>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[28px] bg-white/[0.05] p-5">
-                <div className="mb-2 flex items-center gap-2 text-slate-300">
-                  <CalendarRange className="h-4 w-4" />
-                  <span className="text-sm">Période active</span>
-                </div>
-                <p className="font-semibold text-white">{data.period.startDate} au {data.period.endDate}</p>
-              </div>
-              <div className="rounded-[28px] bg-white/[0.05] p-5">
-                <div className="mb-2 flex items-center gap-2 text-slate-300">
-                  <TimerReset className="h-4 w-4" />
-                  <span className="text-sm">Aujourd’hui</span>
-                </div>
-                <p className="font-semibold text-white">{today}</p>
-              </div>
-              <div className="rounded-[28px] bg-white/[0.05] p-5 sm:col-span-2">
-                <div className="mb-2 flex items-center gap-2 text-slate-300">
-                  <Target className="h-4 w-4" />
-                  <span className="text-sm">Règle du jeu</span>
-                </div>
-                <p className="font-semibold text-white">
-                  Le poids du jour nourrit uniquement la moyenne hebdomadaire. Le dashboard reste lisible, rapide et orienté action.
-                </p>
-              </div>
               <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 rounded-[24px] border border-white/10 px-4 py-4 text-white transition hover:bg-white/8 sm:col-span-2"
+                href="#ilias-section"
+                className="inline-flex items-center justify-between rounded-[24px] bg-cyan-500/14 px-5 py-4 text-white transition hover:bg-cyan-500/20"
               >
-                <Flame className="h-4 w-4" />
-                <span className="text-sm font-semibold">Admin: objectifs, dates, messages et corrections</span>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-cyan-100/70">Aller à</p>
+                  <p className="mt-1 font-[var(--font-heading)] text-2xl font-bold">Ilias</p>
+                </div>
+                <ArrowDownRight className="h-5 w-5 text-cyan-200" />
+              </Link>
+              <Link
+                href="#renaud-section"
+                className="inline-flex items-center justify-between rounded-[24px] bg-orange-500/14 px-5 py-4 text-white transition hover:bg-orange-500/20"
+              >
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-orange-100/70">Aller à</p>
+                  <p className="mt-1 font-[var(--font-heading)] text-2xl font-bold">Renaud</p>
+                </div>
+                <ArrowDownRight className="h-5 w-5 text-orange-200" />
               </Link>
             </div>
           </div>

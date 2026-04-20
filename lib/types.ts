@@ -25,11 +25,21 @@ export interface GlobalSettingsRecord {
   weekly_email_hour_local: string;
 }
 
+export interface AppRuntimeSettingsRecord {
+  id: number;
+  simulation_enabled: boolean;
+  simulated_now: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface WeightEntryRecord {
   id: string;
   profile_id: string;
   entry_date: string;
   weight_kg: number;
+  is_test_data?: boolean;
+  scenario_key?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -48,6 +58,8 @@ export interface EmailLogRecord {
   email_type: "weekly_summary" | "missed_entry_reminder";
   sent_at: string;
   reminder_window_start: string | null;
+  is_test_data?: boolean;
+  scenario_key?: string | null;
 }
 
 export interface WeeklyPoint {
@@ -81,6 +93,7 @@ export interface ParticipantDashboard {
 
 export interface DashboardPayload {
   generatedAt: string;
+  dateContext: AppDateContext;
   period: {
     startDate: string;
     endDate: string;
@@ -92,6 +105,12 @@ export interface DashboardPayload {
 
 export interface AdminPayload {
   settings: GlobalSettingsRecord;
+  runtime: {
+    settings: AppRuntimeSettingsRecord;
+    dateContext: AppDateContext;
+    devToolsEnabled: boolean;
+    scenarios: DevScenarioDefinition[];
+  };
   profiles: Array<
     ProfileRecord & {
       email: string;
@@ -112,4 +131,52 @@ export interface WeightMutationResponse {
   entryDate: string;
   weightKg: number;
   motivationalMessage: string | null;
+}
+
+export interface AppDateContext {
+  currentDate: string;
+  systemDate: string;
+  simulatedDate: string | null;
+  isSimulated: boolean;
+  source: "system" | "env" | "admin";
+}
+
+export type DevFrequencyMode = "daily" | "partial" | "gaps";
+export type DevTrendMode = "realistic" | "behind" | "ahead" | "flat";
+export type OverwriteMode = "replace" | "ignore";
+
+export interface DevGenerateRequest {
+  startDate: string;
+  endDate: string;
+  frequency: DevFrequencyMode;
+  trend: DevTrendMode;
+  overwriteMode: OverwriteMode;
+  includeNoise: boolean;
+  includeMissingDays: boolean;
+  scenarioKey?: string | null;
+}
+
+export interface DevScenarioDefinition {
+  key: string;
+  title: string;
+  description: string;
+}
+
+export interface DevEmailDryRunItem {
+  profileSlug: PersonSlug;
+  firstName: string;
+  to: string;
+  subject: string;
+  reason: string;
+  html: string;
+}
+
+export interface DevSnapshot {
+  exportedAt: string;
+  runtimeSettings: AppRuntimeSettingsRecord;
+  globalSettings: GlobalSettingsRecord;
+  profiles: ProfileRecord[];
+  messages: MotivationalMessageRecord[];
+  weightEntries: WeightEntryRecord[];
+  emailLogs: EmailLogRecord[];
 }
