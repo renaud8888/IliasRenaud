@@ -54,3 +54,34 @@ body {
   border-radius: 16px !important;
   background: rgba(2, 6, 23, 0.96) !important;
 }
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gauge-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.float-in {
+  animation: float-in 0.35s ease-out;
+}

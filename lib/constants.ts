@@ -22,15 +22,15 @@ export const PERSON_THEME: Record<
   }
 > = {
   ilias: {
-    gradient: "from-amber-400 via-orange-500 to-red-500",
-    panel: "bg-orange-500/10",
-    ring: "#f97316",
-    badge: "bg-orange-500/15 text-orange-200 border-orange-400/30"
+    gradient: "from-sky-400 via-cyan-400 to-blue-500",
+    panel: "bg-cyan-500/10",
+    ring: "#38bdf8",
+    badge: "bg-cyan-500/15 text-cyan-100 border-cyan-300/30"
   },
   renaud: {
-    gradient: "from-emerald-400 via-teal-500 to-cyan-500",
+    gradient: "from-orange-400 via-emerald-400 to-lime-400",
     panel: "bg-emerald-500/10",
-    ring: "#14b8a6",
-    badge: "bg-emerald-500/15 text-emerald-100 border-emerald-400/30"
+    ring: "#fb923c",
+    badge: "bg-orange-500/15 text-orange-100 border-orange-300/30"
   }
 };

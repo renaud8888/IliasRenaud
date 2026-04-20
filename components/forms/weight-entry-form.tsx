@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Scale } from "lucide-react";
+import { CheckCircle2, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import type { PersonSlug } from "@/lib/types";
@@ -10,17 +10,29 @@ import type { PersonSlug } from "@/lib/types";
 export function WeightEntryForm({
   profileSlug,
   firstName,
-  defaultDate
+  defaultDate,
+  accentColor
 }: Readonly<{
   profileSlug: PersonSlug;
   firstName: string;
   defaultDate: string;
+  accentColor: string;
 }>) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!success) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setSuccess(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [success]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -32,31 +44,47 @@ export function WeightEntryForm({
     };
 
     startTransition(async () => {
-      const response = await fetch("/api/weights", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const response = await fetch("/api/weights", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-      const result = await response.json();
+        const text = await response.text();
+        const result = text ? JSON.parse(text) : {};
 
-      if (!response.ok) {
-        setError(result.error ?? "Impossible d'enregistrer ce poids.");
-        return;
+        if (!response.ok) {
+          setError(result.error ?? "Impossible d'enregistrer ce poids.");
+          return;
+        }
+
+        setOpen(false);
+        setSuccess(`Pesée enregistrée pour ${firstName}.`);
+        setMessage(result.motivationalMessage ?? null);
+        router.refresh();
+      } catch {
+        setError("Une erreur réseau empêche l’enregistrement pour le moment.");
       }
-
-      setOpen(false);
-      setMessage(result.motivationalMessage ?? null);
-      router.refresh();
     });
   }
 
   return (
     <>
-      <Button className="w-full gap-2" onClick={() => setOpen(true)}>
-        <Scale className="h-4 w-4" />
-        Encoder le poids
-      </Button>
+      <div className="sticky bottom-3 z-20 mt-2 md:static">
+        <div className="rounded-[28px] border border-white/10 bg-slate-950/75 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.45)] backdrop-blur-xl">
+          <Button
+            className="w-full gap-2 rounded-[22px] py-4 text-base text-white"
+            onClick={() => setOpen(true)}
+            style={{
+              background: `linear-gradient(135deg, ${accentColor}CC 0%, ${accentColor} 100%)`
+            }}
+          >
+            <Scale className="h-5 w-5" />
+            Ajouter la pesée du jour
+          </Button>
+        </div>
+      </div>
 
       <Modal open={open} onOpenChange={setOpen} title={`Pesée de ${firstName}`}>
         <form
@@ -98,6 +126,15 @@ export function WeightEntryForm({
           </Button>
         </form>
       </Modal>
+
+      {success ? (
+        <div className="float-in fixed left-1/2 top-20 z-50 w-[min(92vw,420px)] -translate-x-1/2 rounded-[22px] border border-emerald-300/20 bg-emerald-500/15 px-4 py-3 text-white shadow-[0_14px_40px_rgba(16,185,129,0.18)] backdrop-blur-xl">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+            <p className="text-sm font-semibold">{success}</p>
+          </div>
+        </div>
+      ) : null}
 
       <Modal open={Boolean(message)} onOpenChange={(next) => !next && setMessage(null)} title="Message du coach">
         <div className="rounded-3xl border border-white/10 bg-white/4 p-5 text-slate-100">
