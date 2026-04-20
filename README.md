@@ -214,10 +214,15 @@ Le mot de passe est le même que pour le dashboard.
 
 Le fichier [vercel.json](/Users/Renaud_Lothaire/Downloads/IliasRenaud/vercel.json) contient déjà:
 
-- un cron hebdomadaire horaire le lundi
+- un cron quotidien à `10:00 UTC` pour le résumé hebdomadaire
 - un cron quotidien à `07:00 UTC`
 
-Le cron du lundi s’exécute toutes les heures, mais la route n’envoie réellement les emails que lorsque l’heure locale Belgique correspond à `weekly_email_hour_local` en base. Cela permet de changer facilement l’heure depuis l’admin sans modifier le code.
+Sur Vercel Hobby, un cron ne peut pas s’exécuter plus d’une fois par jour. Le projet utilise donc un cron quotidien à `10:00 UTC`, et la route n’envoie réellement le résumé hebdomadaire que si l’on est lundi à l’heure locale configurée.
+
+Important: sur Hobby, comme le cron ne passe qu’une fois par jour, `weekly_email_hour_local` doit rester aligné avec ce passage quotidien.
+Pour la Belgique en période estivale, `10:00 UTC` correspond à `12:00`.
+Si vous voulez une autre heure en Hobby, il faut modifier [vercel.json](/Users/Renaud_Lothaire/Downloads/IliasRenaud/vercel.json) puis redéployer.
+Si vous voulez un horaire réellement libre depuis l’admin sans redéploiement, il faut passer en Vercel Pro ou utiliser un scheduler externe.
 
 ## Configuration du cron secret
 
