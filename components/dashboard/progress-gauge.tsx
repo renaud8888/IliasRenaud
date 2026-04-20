@@ -6,14 +6,12 @@ export function ProgressGauge({
   value,
   theoretical,
   accentColor,
-  title,
-  subtitle
+  title
 }: Readonly<{
   value: number;
   theoretical: number;
   accentColor: string;
   title: string;
-  subtitle: string;
 }>) {
   const size = 248;
   const stroke = 18;
@@ -78,8 +76,7 @@ export function ProgressGauge({
           <p className="mt-2 font-[var(--font-heading)] text-6xl font-bold tracking-tight text-white">
             {formatPercent(value)}
           </p>
-          <p className="mt-2 text-sm text-slate-300">{subtitle}</p>
-          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">
             Théorique {formatPercent(theoretical)}
           </p>
         </div>

@@ -3,12 +3,11 @@ import { WeeklyWeightChart } from "@/components/charts/weekly-weight-chart";
 import { HistoryStrip } from "@/components/dashboard/history-strip";
 import { ProgressGauge } from "@/components/dashboard/progress-gauge";
 import { ProgressRail } from "@/components/dashboard/progress-rail";
-import { ProgressSummary } from "@/components/dashboard/progress-summary";
 import { WeightEntryForm } from "@/components/forms/weight-entry-form";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERSON_THEME } from "@/lib/constants";
-import { formatPercent, formatWeight } from "@/lib/utils";
+import { formatWeight } from "@/lib/utils";
 import type { ParticipantDashboard } from "@/lib/types";
 
 export function ParticipantCard({
@@ -20,14 +19,6 @@ export function ParticipantCard({
 }>) {
   const isLoss = participant.goalType === "loss";
   const theme = PERSON_THEME[participant.slug];
-  const difference = participant.realProgressPct - participant.theoreticalProgressPct;
-  const differenceText =
-    difference > 2
-      ? `Tu es en avance de ${Math.abs(Math.round(difference))}%`
-      : difference < -2
-        ? `Tu es en retard de ${Math.abs(Math.round(difference))}%`
-        : "Tu es dans le bon tempo";
-
   return (
     <Card
       id={`${participant.slug}-section`}
@@ -57,7 +48,6 @@ export function ParticipantCard({
               theoretical={participant.theoreticalProgressPct}
               accentColor={theme.ring}
               title="Progression réelle"
-              subtitle={participant.latestWeeklyLabel}
             />
 
             <div className="space-y-4">
@@ -77,16 +67,8 @@ export function ParticipantCard({
                     </span>
                     <ArrowRight className="h-5 w-5 text-slate-500" />
                   </div>
-                  <p className="mt-3 text-sm text-slate-400">Départ à {formatWeight(participant.startWeight)}</p>
                 </div>
               </div>
-
-              <ProgressSummary
-                theoretical={formatPercent(participant.theoreticalProgressPct)}
-                actual={formatPercent(participant.realProgressPct)}
-                difference={difference}
-                statusText={differenceText}
-              />
 
               <ProgressRail
                 actual={participant.realProgressPct}

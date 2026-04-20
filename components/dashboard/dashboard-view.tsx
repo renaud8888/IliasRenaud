@@ -24,7 +24,9 @@ export function DashboardView({
             <div>
               <p className="section-title">Tableau de bord</p>
               <h2 className="mt-2 font-[var(--font-heading)] text-4xl font-bold md:text-6xl">
-                Voir où tu en es. Agir tout de suite.
+                Voir où tu en es.
+                <br />
+                Agir tout de suite.
               </h2>
               <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
                 Le duel se lit en un instant: progression réelle, objectif du jour, puis action immédiate.
