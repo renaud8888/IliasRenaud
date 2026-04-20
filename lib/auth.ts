@@ -1,14 +1,14 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { ACCESS_COOKIE_NAME } from "@/lib/constants";
-import { getEnv } from "@/lib/env";
+import { getAuthEnv, getEnv } from "@/lib/env";
 
 function createAccessToken() {
-  return `site-access:${getEnv().SESSION_SECRET}`;
+  return `site-access:${getAuthEnv().SESSION_SECRET}`;
 }
 
 export function verifySubmittedPassword(password: string) {
-  return password === getEnv().SITE_PASSWORD;
+  return password === getAuthEnv().SITE_PASSWORD;
 }
 
 export function hasValidCookieToken(token?: string) {

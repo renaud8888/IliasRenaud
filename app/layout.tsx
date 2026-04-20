@@ -5,7 +5,12 @@ import { APP_DESCRIPTION, APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: APP_NAME,
-  description: APP_DESCRIPTION
+  description: APP_DESCRIPTION,
+  icons: {
+    icon: "/ok.png",
+    shortcut: "/ok.png",
+    apple: "/ok.png"
+  }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

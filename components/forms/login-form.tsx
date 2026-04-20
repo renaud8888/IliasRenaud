@@ -15,24 +15,29 @@ export function LoginForm() {
     setError(null);
 
     startTransition(async () => {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          password: String(formData.get("password")),
-          next: searchParams.get("next") ?? "/"
-        })
-      });
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            password: String(formData.get("password")),
+            next: searchParams.get("next") ?? "/"
+          })
+        });
 
-      const result = await response.json();
+        const text = await response.text();
+        const result = text ? JSON.parse(text) : {};
 
-      if (!response.ok) {
-        setError(result.error ?? "Mot de passe incorrect.");
-        return;
+        if (!response.ok) {
+          setError(result.error ?? "Mot de passe incorrect.");
+          return;
+        }
+
+        router.push(result.redirectTo ?? "/");
+        router.refresh();
+      } catch {
+        setError("Connexion impossible. Vérifie les variables d’environnement puis réessaie.");
       }
-
-      router.push(result.redirectTo ?? "/");
-      router.refresh();
     });
   }
 

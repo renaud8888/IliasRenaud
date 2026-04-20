@@ -1,7 +1,11 @@
 import { z } from "zod";
 
-const envSchema = z.object({
+const authEnvSchema = z.object({
   SITE_PASSWORD: z.string().min(1),
+  SESSION_SECRET: z.string().min(1)
+});
+
+const appEnvSchema = z.object({
   SESSION_SECRET: z.string().min(1),
   APP_URL: z.string().url(),
   RENAUD_EMAIL: z.string().email(),
@@ -14,17 +18,31 @@ const envSchema = z.object({
   CRON_SECRET: z.string().min(1)
 });
 
-type AppEnv = z.infer<typeof envSchema>;
+type AuthEnv = z.infer<typeof authEnvSchema>;
+type AppEnv = z.infer<typeof appEnvSchema>;
 
+let cachedAuthEnv: AuthEnv | null = null;
 let cachedEnv: AppEnv | null = null;
+
+export function getAuthEnv(): AuthEnv {
+  if (cachedAuthEnv) {
+    return cachedAuthEnv;
+  }
+
+  cachedAuthEnv = authEnvSchema.parse({
+    SITE_PASSWORD: process.env.SITE_PASSWORD,
+    SESSION_SECRET: process.env.SESSION_SECRET
+  });
+
+  return cachedAuthEnv;
+}
 
 export function getEnv(): AppEnv {
   if (cachedEnv) {
     return cachedEnv;
   }
 
-  cachedEnv = envSchema.parse({
-    SITE_PASSWORD: process.env.SITE_PASSWORD,
+  cachedEnv = appEnvSchema.parse({
     SESSION_SECRET: process.env.SESSION_SECRET,
     APP_URL: process.env.APP_URL,
     RENAUD_EMAIL: process.env.RENAUD_EMAIL,
