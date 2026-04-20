@@ -159,5 +159,5 @@ export function buildWeeklyEmailPreview(participant: ParticipantDashboard) {
 
 export function isWithinWeeklySendWindow(expectedLocalHour: string) {
   const now = getTodayInTimezone();
-  return format(now, "HH:00") === expectedLocalHour;
+  return format(now, "i") === "1" && format(now, "HH:00") === expectedLocalHour;
 }
