@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
+import { SetupState } from "@/components/ui/setup-state";
 import { isAuthenticated } from "@/lib/auth";
 import { getTodayInTimezone, toDateString } from "@/lib/date";
 import { getDashboardData } from "@/lib/services/dashboard";
@@ -12,11 +13,29 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [dashboard, today] = await Promise.all([getDashboardData(), Promise.resolve(toDateString(getTodayInTimezone()))]);
+  const today = toDateString(getTodayInTimezone());
 
-  return (
-    <AppShell>
-      <DashboardView data={dashboard} today={today} />
-    </AppShell>
-  );
+  try {
+    const dashboard = await getDashboardData();
+
+    return (
+      <AppShell>
+        <DashboardView data={dashboard} today={today} />
+      </AppShell>
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Une erreur de configuration serveur empêche encore de charger le dashboard.";
+
+    return (
+      <AppShell>
+        <SetupState
+          title="Le dashboard n’est pas encore prêt"
+          message={`${message} Vérifie les variables d’environnement Supabase dans Vercel puis exécute le SQL de création et de seed.`}
+        />
+      </AppShell>
+    );
+  }
 }

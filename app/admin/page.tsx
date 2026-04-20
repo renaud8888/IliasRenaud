@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { AdminPanel } from "@/components/forms/admin-panel";
+import { SetupState } from "@/components/ui/setup-state";
 import { isAuthenticated } from "@/lib/auth";
 import { getAdminData } from "@/lib/services/dashboard";
 
@@ -11,11 +12,28 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  const data = await getAdminData();
+  try {
+    const data = await getAdminData();
 
-  return (
-    <AppShell showAdminLink={false}>
-      <AdminPanel initialData={data} />
-    </AppShell>
-  );
+    return (
+      <AppShell showAdminLink={false}>
+        <AdminPanel initialData={data} />
+      </AppShell>
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Une erreur de configuration serveur empêche encore de charger l’admin.";
+
+    return (
+      <AppShell showAdminLink={false}>
+        <SetupState
+          title="L’admin n’est pas encore prête"
+          message={`${message} Vérifie surtout les variables d’environnement Vercel et l’initialisation Supabase.`}
+          showAdminLink
+        />
+      </AppShell>
+    );
+  }
 }
