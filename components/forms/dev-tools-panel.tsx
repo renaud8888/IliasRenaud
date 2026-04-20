@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Beaker,
+  CheckCircle2,
   Clock4,
   Download,
+  LoaderCircle,
   Mail,
   RefreshCcw,
   RotateCcw,
@@ -32,6 +35,7 @@ export function DevToolsPanel({
   runtime: AdminPayload["runtime"];
   profiles: AdminPayload["profiles"];
 }>) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -74,7 +78,8 @@ export function DevToolsPanel({
 
   function runAction(
     action: () => Promise<void>,
-    successMessage: string
+    successMessage: string,
+    options?: { refresh?: boolean }
   ) {
     setError(null);
     setSuccess(null);
@@ -83,23 +88,51 @@ export function DevToolsPanel({
       try {
         await action();
         setSuccess(successMessage);
+        if (options?.refresh) {
+          router.refresh();
+        }
       } catch (caughtError) {
         setError(caughtError instanceof Error ? caughtError.message : "Erreur dev inconnue.");
       }
     });
   }
 
-  function withConfirm(message: string, action: () => Promise<void>, successMessage: string) {
+  function withConfirm(
+    message: string,
+    action: () => Promise<void>,
+    successMessage: string,
+    options?: { refresh?: boolean }
+  ) {
     if (!window.confirm(message)) {
       return;
     }
 
-    runAction(action, successMessage);
+    runAction(action, successMessage, options);
   }
 
   return (
     <div className="space-y-6">
       <SimulationBadge dateContext={dateContext} />
+
+      {(pending || error || success) ? (
+        <div className="rounded-[24px] border border-white/10 bg-white/[0.05] px-4 py-3">
+          {pending ? (
+            <div className="flex items-center gap-3 text-slate-200">
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+              <p className="text-sm font-medium">Action en cours...</p>
+            </div>
+          ) : null}
+          {!pending && success ? (
+            <div className="flex items-center gap-3 text-emerald-300">
+              <CheckCircle2 className="h-4 w-4" />
+              <p className="text-sm font-medium">{success}</p>
+            </div>
+          ) : null}
+          {!pending && error ? (
+            <div className="text-sm font-medium text-red-300">{error}</div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div>
         <p className="section-title">Simulation & tests</p>
@@ -147,7 +180,7 @@ export function DevToolsPanel({
                           simulatedNow: simulationEnabled && simulatedNow ? new Date(simulatedNow).toISOString() : null
                         });
                         setDateContext(result);
-                      }, "Date simulée mise à jour.")
+                      }, "Date simulée mise à jour.", { refresh: true })
                     }
                   >
                     Appliquer la date simulée
@@ -159,7 +192,7 @@ export function DevToolsPanel({
                         const result = await postDevAction({ action: "use-system-date" });
                         setDateContext(result);
                         setSimulationEnabled(false);
-                      }, "Retour à la vraie date système.")
+                      }, "Retour à la vraie date système.", { refresh: true })
                     }
                   >
                     Revenir à la date réelle
@@ -193,7 +226,7 @@ export function DevToolsPanel({
                         if (scenario.key === "scenario-h" && result?.scenario) {
                           setSimulationEnabled(true);
                         }
-                      }, `${scenario.title} injecté.`)
+                      }, `${scenario.title} injecté. Recharge visuelle appliquée.`, { refresh: true })
                     }
                   >
                     <p className="font-semibold text-white">{scenario.title}</p>
@@ -296,7 +329,7 @@ export function DevToolsPanel({
                       action: "generate-data",
                       payload: generator
                     });
-                  }, "Données fictives générées.")
+                  }, "Données fictives générées. Recharge visuelle appliquée.", { refresh: true })
                 }
               >
                 Générer les poids fictifs
@@ -400,7 +433,8 @@ export function DevToolsPanel({
                       async () => {
                         await postDevAction({ action: "delete-test-data" });
                       },
-                      "Toutes les données de test ont été supprimées."
+                      "Toutes les données de test ont été supprimées.",
+                      { refresh: true }
                     )
                   }
                 >
@@ -416,7 +450,8 @@ export function DevToolsPanel({
                       async () => {
                         await postDevAction({ action: "reset-default-data" });
                       },
-                      "Données par défaut restaurées."
+                      "Données par défaut restaurées.",
+                      { refresh: true }
                     )
                   }
                 >
@@ -432,7 +467,8 @@ export function DevToolsPanel({
                       async () => {
                         await postDevAction({ action: "clear-weights" });
                       },
-                      "Toutes les pesées ont été supprimées."
+                      "Toutes les pesées ont été supprimées.",
+                      { refresh: true }
                     )
                   }
                 >
@@ -447,7 +483,8 @@ export function DevToolsPanel({
                       async () => {
                         await postDevAction({ action: "restore-initial-configuration" });
                       },
-                      "Configuration initiale restaurée."
+                      "Configuration initiale restaurée.",
+                      { refresh: true }
                     )
                   }
                 >
@@ -484,9 +521,6 @@ export function DevToolsPanel({
           </div>
         </Card>
       </div>
-
-      {error ? <p className="text-sm text-red-300">{error}</p> : null}
-      {success ? <p className="text-sm text-emerald-300">{success}</p> : null}
     </div>
   );
 }
