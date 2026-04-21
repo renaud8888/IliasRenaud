@@ -20,6 +20,11 @@ export const DEFAULT_PROFILE_CONFIG = {
     start_weight: 65,
     target_weight: 70,
     accent_color: "#fb923c"
+  },
+  kamran: {
+    start_weight: 78,
+    target_weight: 84,
+    accent_color: "#ec4899"
   }
 } as const;
 
@@ -67,6 +72,28 @@ export const DEFAULT_MESSAGES = {
     "Quand l'appétit cale, la discipline prend le relais.",
     "Le progrès aime les repas qui reviennent sans drame.",
     "Encore une journée carrée et tu renforces le socle."
+  ],
+  kamran: [
+    "Chaque repas solide construit du muscle utile.",
+    "Prise de masse propre: patience, charges et calories bien cadrées.",
+    "Le volume vient mieux quand la récup suit vraiment.",
+    "Un kilo utile commence souvent par une journée bien mangée.",
+    "Force, sommeil, protéines: la base reste imbattable.",
+    "Le muscle aime les répétitions propres, pas l'impro.",
+    "Une séance sérieuse mérite un repas sérieux derrière.",
+    "Construire du muscle, c'est répéter les bonnes journées.",
+    "Pas besoin de précipiter la masse, il faut la construire.",
+    "Quand l'appétit hésite, la discipline prend le relais.",
+    "Tu ne remplis pas juste la balance, tu renforces le châssis.",
+    "Chaque semaine stable finit par se voir dans le miroir.",
+    "Des calories propres battent toujours le chaos alimentaire.",
+    "Le progrès adore les routines simples et tenues longtemps.",
+    "Ton objectif n'est pas juste plus lourd, c'est plus fort.",
+    "Le muscle récompense la constance plus que la motivation.",
+    "Encore une journée bien cadrée et le physique suit.",
+    "Une collation bien placée vaut parfois une séance mieux récupérée.",
+    "Prise de masse propre: moins de bruit, plus de structure.",
+    "Tu bâtis du solide, pas du hasard."
   ]
 } as const;
 

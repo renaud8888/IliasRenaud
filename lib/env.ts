@@ -15,6 +15,7 @@ const emailEnvSchema = z.object({
   APP_URL: z.string().url(),
   RENAUD_EMAIL: z.string().email(),
   ILIAS_EMAIL: z.string().email(),
+  KAMRAN_EMAIL: z.string().email().optional(),
   RESEND_API_KEY: z.string().min(1),
   RESEND_FROM_EMAIL: z.string().min(1)
 });
@@ -79,6 +80,7 @@ export function getEmailEnv(): EmailEnv {
     APP_URL: process.env.APP_URL,
     RENAUD_EMAIL: process.env.RENAUD_EMAIL,
     ILIAS_EMAIL: process.env.ILIAS_EMAIL,
+    KAMRAN_EMAIL: process.env.KAMRAN_EMAIL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL
   });

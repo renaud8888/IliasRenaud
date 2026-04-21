@@ -20,7 +20,7 @@ export function WeeklyWeightChart({
 }: Readonly<{
   data: WeeklyPoint[];
   accentColor: string;
-  slug: "ilias" | "renaud";
+  slug: "ilias" | "renaud" | "kamran";
 }>) {
   const chartData = data.map((item) => ({
     ...item,

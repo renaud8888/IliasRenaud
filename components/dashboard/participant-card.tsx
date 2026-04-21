@@ -6,7 +6,7 @@ import { ProgressRail } from "@/components/dashboard/progress-rail";
 import { WeightEntryForm } from "@/components/forms/weight-entry-form";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { PERSON_THEME } from "@/lib/constants";
+import { GOAL_LABELS, PERSON_THEME } from "@/lib/constants";
 import { formatWeight } from "@/lib/utils";
 import type { ParticipantDashboard } from "@/lib/types";
 
@@ -19,6 +19,9 @@ export function ParticipantCard({
 }>) {
   const isLoss = participant.goalType === "loss";
   const theme = PERSON_THEME[participant.slug];
+  const goalLabel =
+    participant.slug === "kamran" ? "Objectif prise de masse musculaire" : GOAL_LABELS[participant.goalType];
+
   return (
     <Card
       id={`${participant.slug}-section`}
@@ -36,7 +39,7 @@ export function ParticipantCard({
               <h2 className="font-[var(--font-heading)] text-4xl font-bold md:text-5xl">{participant.firstName}</h2>
               <div className="mt-3 flex items-center gap-3 text-sm text-slate-300">
                 {isLoss ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
-                <span>{isLoss ? "Objectif perte de poids" : "Objectif prise de poids"}</span>
+                <span>{goalLabel}</span>
               </div>
             </div>
             <StatusBadge status={participant.status} />

@@ -3,6 +3,7 @@ import { ArrowDownRight, CalendarRange, TimerReset } from "lucide-react";
 import { ParticipantCard } from "@/components/dashboard/participant-card";
 import { Card } from "@/components/ui/card";
 import { SimulationBadge } from "@/components/ui/simulation-badge";
+import { PERSON_THEME } from "@/lib/constants";
 import type { DashboardPayload } from "@/lib/types";
 
 export function DashboardView({
@@ -12,8 +13,7 @@ export function DashboardView({
   data: DashboardPayload;
   today: string;
 }>) {
-  const ilias = data.participants.find((participant) => participant.slug === "ilias");
-  const renaud = data.participants.find((participant) => participant.slug === "renaud");
+  const participants = data.participants;
 
   return (
     <div className="space-y-8">
@@ -45,35 +45,34 @@ export function DashboardView({
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Link
-                href="#ilias-section"
-                className="inline-flex items-center justify-between rounded-[24px] bg-cyan-500/14 px-5 py-4 text-white transition hover:bg-cyan-500/20"
-              >
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-cyan-100/70">Aller à</p>
-                  <p className="mt-1 font-[var(--font-heading)] text-2xl font-bold">Ilias</p>
-                </div>
-                <ArrowDownRight className="h-5 w-5 text-cyan-200" />
-              </Link>
-              <Link
-                href="#renaud-section"
-                className="inline-flex items-center justify-between rounded-[24px] bg-orange-500/14 px-5 py-4 text-white transition hover:bg-orange-500/20"
-              >
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-orange-100/70">Aller à</p>
-                  <p className="mt-1 font-[var(--font-heading)] text-2xl font-bold">Renaud</p>
-                </div>
-                <ArrowDownRight className="h-5 w-5 text-orange-200" />
-              </Link>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {participants.map((participant) => {
+                const theme = PERSON_THEME[participant.slug];
+
+                return (
+                  <Link
+                    key={participant.id}
+                    href={`#${participant.slug}-section`}
+                    className="inline-flex items-center justify-between rounded-[24px] px-5 py-4 text-white transition hover:brightness-110"
+                    style={{ backgroundColor: `${theme.ring}24` }}
+                  >
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/60">Aller à</p>
+                      <p className="mt-1 font-[var(--font-heading)] text-2xl font-bold">{participant.firstName}</p>
+                    </div>
+                    <ArrowDownRight className="h-5 w-5 text-white/80" />
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
       </Card>
 
       <div className="grid gap-8 xl:grid-cols-2">
-        {ilias ? <ParticipantCard participant={ilias} today={today} /> : null}
-        {renaud ? <ParticipantCard participant={renaud} today={today} /> : null}
+        {participants.map((participant) => (
+          <ParticipantCard key={participant.id} participant={participant} today={today} />
+        ))}
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ export async function saveAdminSettings(payload: unknown) {
     .eq("id", 1);
 
   if (settingsError) {
-    throw settingsError;
+    throw new Error(`Impossible de sauvegarder les paramètres globaux: ${settingsError.message}`);
   }
 
   for (const profile of parsed.profiles) {
@@ -24,7 +24,7 @@ export async function saveAdminSettings(payload: unknown) {
       .eq("id", profile.id);
 
     if (error) {
-      throw error;
+      throw new Error(`Impossible de sauvegarder un profil: ${error.message}`);
     }
   }
 
@@ -35,7 +35,7 @@ export async function saveAdminSettings(payload: unknown) {
       .eq("profile_id", profileId);
 
     if (deleteError) {
-      throw deleteError;
+      throw new Error(`Impossible de nettoyer les messages d'un profil: ${deleteError.message}`);
     }
 
     const cleanMessages = messages
@@ -51,7 +51,7 @@ export async function saveAdminSettings(payload: unknown) {
       const { error: insertError } = await supabase.from("motivational_messages").insert(cleanMessages);
 
       if (insertError) {
-        throw insertError;
+        throw new Error(`Impossible d'insérer les messages d'un profil: ${insertError.message}`);
       }
     }
   }

@@ -1,7 +1,7 @@
 export type GoalType = "loss" | "gain";
 export type ProgressStatus = "en avance" | "dans les temps" | "en retard";
 
-export type PersonSlug = "ilias" | "renaud";
+export type PersonSlug = "ilias" | "renaud" | "kamran";
 
 export interface ProfileRecord {
   id: string;

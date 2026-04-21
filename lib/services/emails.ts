@@ -25,7 +25,7 @@ async function logEmail(params: {
 
 function getRecipientEmail(slug: PersonSlug) {
   const env = getEmailEnv();
-  return env[PERSON_EMAIL_ENV_KEYS[slug]];
+  return env[PERSON_EMAIL_ENV_KEYS[slug]] ?? "";
 }
 
 export async function sendWeeklySummaryEmails() {
@@ -40,6 +40,7 @@ export async function sendWeeklySummaryEmails() {
   for (const participant of dashboard.participants) {
     const counterpart = dashboard.participants.find((item) => item.slug !== participant.slug);
     const profile = profiles.find((item) => item.slug === participant.slug);
+    const recipient = getRecipientEmail(participant.slug);
     const messagePool = messages.filter((message) => message.profile_id === profile?.id);
     const motivation =
       messagePool[Math.floor(Math.random() * Math.max(messagePool.length, 1))]?.content ??
@@ -60,9 +61,13 @@ export async function sendWeeklySummaryEmails() {
       }
     }
 
+    if (!recipient) {
+      continue;
+    }
+
     await resend.emails.send({
       from: env.RESEND_FROM_EMAIL,
-      to: getRecipientEmail(participant.slug),
+      to: recipient,
       subject: `Résumé hebdo - ${participant.firstName}`,
       html: buildWeeklySummaryEmail({
         participant,
@@ -112,6 +117,7 @@ export async function sendMissedEntryReminders() {
   let sentCount = 0;
 
   for (const profile of profiles) {
+    const recipient = getRecipientEmail(profile.slug);
     const latestEntryDate = getLatestEntryDateForProfile(profile.id, entries);
     const missedSince =
       latestEntryDate === null || latestEntryDate < reminderWindowStart;
@@ -131,9 +137,13 @@ export async function sendMissedEntryReminders() {
       messagePool[Math.floor(Math.random() * Math.max(messagePool.length, 1))]?.content ??
       "Une mesure aujourd'hui remet tout de suite le projet sur ses rails.";
 
+    if (!recipient) {
+      continue;
+    }
+
     await resend.emails.send({
       from: env.RESEND_FROM_EMAIL,
-      to: getRecipientEmail(profile.slug),
+      to: recipient,
       subject: `Rappel pesée - ${profile.first_name}`,
       html: buildMissedEntryReminderEmail({
         firstName: profile.first_name,

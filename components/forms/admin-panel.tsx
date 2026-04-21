@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { PencilLine, Save, Trash2 } from "lucide-react";
+import { CheckCircle2, LoaderCircle, PencilLine, Save, Trash2 } from "lucide-react";
 import { DevToolsPanel } from "@/components/forms/dev-tools-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -144,6 +144,24 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
     <div className="space-y-6">
       <SimulationBadge dateContext={initialData.runtime.dateContext} />
 
+      {(pending || error || success) ? (
+        <div className="rounded-[24px] border border-white/10 bg-white/[0.05] px-4 py-3">
+          {pending ? (
+            <div className="flex items-center gap-3 text-slate-200">
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+              <p className="text-sm font-medium">Mise à jour admin en cours...</p>
+            </div>
+          ) : null}
+          {!pending && success ? (
+            <div className="flex items-center gap-3 text-emerald-300">
+              <CheckCircle2 className="h-4 w-4" />
+              <p className="text-sm font-medium">{success}</p>
+            </div>
+          ) : null}
+          {!pending && error ? <p className="text-sm font-medium text-red-300">{error}</p> : null}
+        </div>
+      ) : null}
+
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
           <div className="flex items-center justify-between gap-3">
@@ -274,7 +292,9 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
                     />
                   </label>
                 </div>
-                <p className="mt-3 text-sm text-slate-400">Email actuel: {initialData.profiles.find((item) => item.id === profile.id)?.email}</p>
+                <p className="mt-3 text-sm text-slate-400">
+                  Email actuel: {initialData.profiles.find((item) => item.id === profile.id)?.email || "non défini"}
+                </p>
               </div>
             ))}
           </div>
@@ -354,9 +374,6 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
           </Card>
         ))}
       </div>
-
-      {error ? <p className="text-sm text-red-300">{error}</p> : null}
-      {success ? <p className="text-sm text-emerald-300">{success}</p> : null}
 
       <DevToolsPanel runtime={initialData.runtime} profiles={initialData.profiles} />
     </div>

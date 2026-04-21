@@ -51,18 +51,42 @@ function shouldGenerateEntry(index: number, totalDays: number, request: DevGener
 
 function getTrendFactor(trend: DevTrendMode, slug: PersonSlug) {
   if (trend === "behind") {
-    return slug === "ilias" ? 0.62 : 0.74;
+    if (slug === "ilias") {
+      return 0.62;
+    }
+
+    if (slug === "kamran") {
+      return 0.68;
+    }
+
+    return 0.74;
   }
 
   if (trend === "ahead") {
-    return slug === "renaud" ? 1.18 : 1.08;
+    if (slug === "renaud") {
+      return 1.18;
+    }
+
+    if (slug === "kamran") {
+      return 1.16;
+    }
+
+    return 1.08;
   }
 
   if (trend === "flat") {
     return 0.15;
   }
 
-  return slug === "ilias" ? 0.97 : 1.03;
+  if (slug === "ilias") {
+    return 0.97;
+  }
+
+  if (slug === "kamran") {
+    return 1.04;
+  }
+
+  return 1.03;
 }
 
 function buildWeightValue(params: {
@@ -308,7 +332,7 @@ export async function restoreInitialConfiguration() {
   await supabase.from("global_settings").update(DEFAULT_GLOBAL_SETTINGS).eq("id", 1);
 
   await Promise.all(
-    (["ilias", "renaud"] as const).map(async (slug) => {
+    (["ilias", "renaud", "kamran"] as const).map(async (slug) => {
       const profile = profileMap[slug];
 
       if (!profile) {
@@ -435,7 +459,12 @@ export async function previewWeeklyEmails(): Promise<DevEmailDryRunItem[]> {
   return dashboard.participants.map((participant) => ({
     profileSlug: participant.slug,
     firstName: participant.firstName,
-    to: participant.slug === "ilias" ? emailEnv.ILIAS_EMAIL : emailEnv.RENAUD_EMAIL,
+    to:
+      participant.slug === "ilias"
+        ? emailEnv.ILIAS_EMAIL
+        : participant.slug === "renaud"
+          ? emailEnv.RENAUD_EMAIL
+          : emailEnv.KAMRAN_EMAIL ?? "",
     subject: `Résumé hebdo - ${participant.firstName}`,
     reason: `Résumé hebdomadaire généré pour ${format(parseDateString(dashboard.dateContext.currentDate), "EEEE d MMMM yyyy", { locale: fr })}.`,
     html: buildWeeklySummaryEmail({
@@ -463,7 +492,12 @@ export async function previewMissedReminderEmails(): Promise<DevEmailDryRunItem[
     .map((profile) => ({
       profileSlug: profile.slug,
       firstName: profile.first_name,
-      to: profile.slug === "ilias" ? emailEnv.ILIAS_EMAIL : emailEnv.RENAUD_EMAIL,
+      to:
+        profile.slug === "ilias"
+          ? emailEnv.ILIAS_EMAIL
+          : profile.slug === "renaud"
+            ? emailEnv.RENAUD_EMAIL
+            : emailEnv.KAMRAN_EMAIL ?? "",
       subject: `Rappel pesée - ${profile.first_name}`,
       reason: getReminderReason(profile.first_name),
       html: buildMissedEntryReminderEmail({
