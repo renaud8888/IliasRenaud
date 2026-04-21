@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { requireSiteAccessOrThrow } from "@/lib/auth";
 import { saveAdminSettings } from "@/lib/services/admin";
@@ -7,6 +8,8 @@ export async function PUT(request: NextRequest) {
   try {
     requireSiteAccessOrThrow(request);
     await saveAdminSettings(await request.json());
+    revalidatePath("/");
+    revalidatePath("/admin");
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Response) {

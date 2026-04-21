@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireSiteAccessOrThrow } from "@/lib/auth";
 import { upsertWeightEntry } from "@/lib/services/weights";
 import { weightInputSchema } from "@/lib/validators/weights";
@@ -8,6 +9,8 @@ export async function POST(request: NextRequest) {
     requireSiteAccessOrThrow(request);
     const payload = weightInputSchema.parse(await request.json());
     const result = await upsertWeightEntry(payload);
+    revalidatePath("/");
+    revalidatePath("/admin");
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof Response) {

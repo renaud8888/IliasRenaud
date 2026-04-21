@@ -1,16 +1,22 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
-import { LogOut, Settings2, Trophy } from "lucide-react";
+import { ArrowLeft, LogOut, Settings2, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function AppShell({
   children,
-  showAdminLink = true
+  showAdminLink = true,
+  backLink
 }: Readonly<{
   children: React.ReactNode;
   showAdminLink?: boolean;
+  backLink?: {
+    href: Route;
+    label: string;
+  };
 }>) {
   const router = useRouter();
 
@@ -34,6 +40,15 @@ export function AppShell({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {backLink ? (
+              <Link
+                href={backLink.href}
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/8"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {backLink.label}
+              </Link>
+            ) : null}
             {showAdminLink ? (
               <Link
                 href="/admin"

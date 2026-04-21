@@ -16,7 +16,7 @@ export default async function AdminPage() {
     const data = await getAdminData();
 
     return (
-      <AppShell showAdminLink={false}>
+      <AppShell showAdminLink={false} backLink={{ href: "/", label: "Retour accueil" }}>
         <AdminPanel initialData={data} />
       </AppShell>
     );
@@ -27,7 +27,7 @@ export default async function AdminPage() {
         : "Une erreur de configuration serveur empêche encore de charger l’admin.";
 
     return (
-      <AppShell showAdminLink={false}>
+      <AppShell showAdminLink={false} backLink={{ href: "/", label: "Retour accueil" }}>
         <SetupState
           title="L’admin n’est pas encore prête"
           message={`${message} Vérifie surtout les variables d’environnement Vercel et l’initialisation Supabase.`}

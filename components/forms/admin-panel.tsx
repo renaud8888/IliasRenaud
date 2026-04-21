@@ -201,19 +201,6 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-200">Tolérance statut (%)</span>
-              <input
-                type="number"
-                step="0.5"
-                value={form.settings.status_tolerance_pct}
-                onChange={(event) => setForm((current) => ({
-                  ...current,
-                  settings: { ...current.settings, status_tolerance_pct: Number(event.target.value) }
-                }))}
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
-              />
-            </label>
-            <label className="space-y-2">
               <span className="text-sm font-semibold text-slate-200">Cooldown rappel (jours)</span>
               <input
                 type="number"
@@ -294,6 +281,9 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
                 </div>
                 <p className="mt-3 text-sm text-slate-400">
                   Email actuel: {initialData.profiles.find((item) => item.id === profile.id)?.email || "non défini"}
+                </p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Ces valeurs pilotent directement le cap affiché sur la page principale après sauvegarde.
                 </p>
               </div>
             ))}
