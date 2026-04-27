@@ -9,7 +9,7 @@ const styles: Record<ProgressStatus, string> = {
 
 export function StatusBadge({ status }: Readonly<{ status: ProgressStatus }>) {
   return (
-    <span className={cn("inline-flex rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]", styles[status])}>
+    <span className={cn("inline-flex shrink-0 rounded-full border px-2.5 py-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:px-3 sm:text-xs", styles[status])}>
       {status}
     </span>
   );
