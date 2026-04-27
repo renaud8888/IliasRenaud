@@ -1,7 +1,8 @@
 import { Activity, Gauge, Target, TrendingDown, TrendingUp } from "lucide-react";
 import { WeeklyWeightChart } from "@/components/charts/weekly-weight-chart";
-import { HistoryStrip } from "@/components/dashboard/history-strip";
+import { ActivitySummary } from "@/components/dashboard/activity-summary";
 import { ProgressGauge } from "@/components/dashboard/progress-gauge";
+import { SportEntryForm } from "@/components/forms/sport-entry-form";
 import { WeightEntryForm } from "@/components/forms/weight-entry-form";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -87,6 +88,12 @@ export function ParticipantCard({
             profileSlug={participant.slug}
             firstName={participant.firstName}
             defaultDate={today}
+            accentColor={theme.ring}
+          />
+
+          <SportEntryForm
+            profileSlug={participant.slug}
+            todaySport={participant.todaySport}
             accentColor={theme.ring}
           />
 
@@ -193,7 +200,7 @@ export function ParticipantCard({
             <WeeklyWeightChart data={participant.chart} accentColor={theme.ring} slug={participant.slug} />
           </div>
 
-          <HistoryStrip participant={participant} />
+          <ActivitySummary stats={participant.sportStats} accentColor={theme.ring} />
 
         </div>
       </div>

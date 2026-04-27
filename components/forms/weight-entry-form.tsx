@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, CheckCircle2, Scale } from "lucide-react";
+import { CalendarDays, CheckCircle2, Dumbbell, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { SPORT_ACTIVITY_TYPES } from "@/lib/constants";
 import type { PersonSlug } from "@/lib/types";
 
 export function WeightEntryForm({
@@ -22,6 +23,7 @@ export function WeightEntryForm({
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [entryDate, setEntryDate] = useState(defaultDate);
+  const [sportDone, setSportDone] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -38,6 +40,7 @@ export function WeightEntryForm({
   useEffect(() => {
     if (open) {
       setEntryDate(defaultDate);
+      setSportDone(false);
     }
   }, [defaultDate, open]);
 
@@ -47,7 +50,10 @@ export function WeightEntryForm({
     const payload = {
       profileSlug,
       entryDate: String(formData.get("entryDate")),
-      weightKg: Number(formData.get("weightKg"))
+      weightKg: Number(formData.get("weightKg")),
+      sportDone: String(formData.get("sportDone")) === "true",
+      sportActivityType: formData.get("sportActivityType") ? String(formData.get("sportActivityType")) : null,
+      sportNote: formData.get("sportNote") ? String(formData.get("sportNote")) : null
     };
 
     startTransition(async () => {
@@ -128,6 +134,61 @@ export function WeightEntryForm({
               className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white outline-none ring-0"
               required
             />
+          </div>
+          <div className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <Dumbbell className="h-4 w-4 text-slate-400" />
+              <p className="text-sm font-bold text-white">Sport aujourd’hui ?</p>
+            </div>
+            <input type="hidden" name="sportDone" value={sportDone ? "true" : "false"} />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setSportDone(true)}
+                className="rounded-2xl px-4 py-3 text-sm font-extrabold text-white transition"
+                style={{
+                  background: sportDone ? `linear-gradient(135deg, ${accentColor}CC, ${accentColor})` : "rgba(15,23,42,0.9)"
+                }}
+              >
+                Oui
+              </button>
+              <button
+                type="button"
+                onClick={() => setSportDone(false)}
+                className="rounded-2xl px-4 py-3 text-sm font-extrabold text-white transition"
+                style={{
+                  background: sportDone ? "rgba(15,23,42,0.9)" : "rgba(51,65,85,0.9)"
+                }}
+              >
+                Non
+              </button>
+            </div>
+            {sportDone ? (
+              <div className="mt-3 space-y-3">
+                <label className="block space-y-2">
+                  <span className="text-sm font-semibold text-slate-200">Type d’activité</span>
+                  <select
+                    name="sportActivityType"
+                    defaultValue="Futsal"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white outline-none"
+                  >
+                    {SPORT_ACTIVITY_TYPES.map((activity) => (
+                      <option key={activity} value={activity}>{activity}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block space-y-2">
+                  <span className="text-sm font-semibold text-slate-200">Note courte</span>
+                  <input
+                    name="sportNote"
+                    type="text"
+                    maxLength={120}
+                    placeholder="Ex. match intense"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white outline-none"
+                  />
+                </label>
+              </div>
+            ) : null}
           </div>
           {error ? <p className="text-sm text-red-300">{error}</p> : null}
           <Button type="submit" className="w-full" disabled={pending}>

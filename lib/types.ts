@@ -2,6 +2,18 @@ export type GoalType = "loss" | "gain";
 export type ProgressStatus = "en avance" | "dans les temps" | "en retard";
 
 export type PersonSlug = "ilias" | "renaud" | "kamran";
+export type SportActivityType =
+  | "Futsal"
+  | "Football"
+  | "Vélo"
+  | "Marche"
+  | "Course à pied"
+  | "Musculation générale"
+  | "Randonnée"
+  | "Renforcement musculaire"
+  | "Calisthénie"
+  | "Natation / piscine"
+  | "Autre";
 
 export interface ProfileRecord {
   id: string;
@@ -38,6 +50,10 @@ export interface WeightEntryRecord {
   profile_id: string;
   entry_date: string;
   weight_kg: number;
+  sport_done: boolean;
+  sport_activity_type: SportActivityType | null;
+  sport_note: string | null;
+  sport_updated_at: string | null;
   is_test_data?: boolean;
   scenario_key?: string | null;
   created_at: string;
@@ -75,6 +91,29 @@ export interface DailyPoint {
   label: string;
   weight: number;
   theoreticalWeight: number;
+  sportDone: boolean;
+  sportActivityType: SportActivityType | null;
+}
+
+export interface ParticipantSportStats {
+  weekSessions: number;
+  monthSessions: number;
+  frequentActivity: SportActivityType | null;
+  activeStreakDays: number;
+  latestActivities: Array<{
+    date: string;
+    label: string;
+    activityType: SportActivityType;
+    note: string | null;
+  }>;
+}
+
+export interface ParticipantTodaySport {
+  entryDate: string;
+  hasWeightEntry: boolean;
+  sportDone: boolean;
+  sportActivityType: SportActivityType | null;
+  sportNote: string | null;
 }
 
 export interface ParticipantDashboard {
@@ -96,6 +135,8 @@ export interface ParticipantDashboard {
     weekLabel: string;
     averageWeight: number;
   }>;
+  todaySport: ParticipantTodaySport;
+  sportStats: ParticipantSportStats;
 }
 
 export interface DashboardPayload {

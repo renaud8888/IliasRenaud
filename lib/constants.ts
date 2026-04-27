@@ -46,3 +46,17 @@ export const GOAL_LABELS: Record<GoalType, string> = {
   loss: "Objectif perte de poids",
   gain: "Objectif prise de poids"
 };
+
+export const SPORT_ACTIVITY_TYPES = [
+  "Futsal",
+  "Football",
+  "Vélo",
+  "Marche",
+  "Course à pied",
+  "Musculation générale",
+  "Randonnée",
+  "Renforcement musculaire",
+  "Calisthénie",
+  "Natation / piscine",
+  "Autre"
+] as const;

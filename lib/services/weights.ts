@@ -1,11 +1,14 @@
 import { randomInt } from "node:crypto";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import type { PersonSlug, WeightMutationResponse } from "@/lib/types";
+import type { PersonSlug, SportActivityType, WeightMutationResponse } from "@/lib/types";
 
 export async function upsertWeightEntry(params: {
   profileSlug: PersonSlug;
   entryDate: string;
   weightKg: number;
+  sportDone?: boolean;
+  sportActivityType?: SportActivityType | null;
+  sportNote?: string | null;
 }): Promise<WeightMutationResponse> {
   const supabase = getSupabaseAdmin();
   const { data: profile } = await supabase
@@ -22,7 +25,11 @@ export async function upsertWeightEntry(params: {
     {
       profile_id: profile.id,
       entry_date: params.entryDate,
-      weight_kg: params.weightKg
+      weight_kg: params.weightKg,
+      sport_done: params.sportDone ?? false,
+      sport_activity_type: params.sportDone ? params.sportActivityType ?? "Autre" : null,
+      sport_note: params.sportDone ? params.sportNote ?? null : null,
+      sport_updated_at: params.sportDone ? new Date().toISOString() : null
     },
     {
       onConflict: "profile_id,entry_date"
@@ -51,19 +58,75 @@ export async function upsertWeightEntry(params: {
   };
 }
 
-export async function updateWeightEntry(entryId: string, params: { entryDate: string; weightKg: number }) {
+export async function updateWeightEntry(entryId: string, params: {
+  entryDate: string;
+  weightKg: number;
+  sportDone?: boolean;
+  sportActivityType?: SportActivityType | null;
+  sportNote?: string | null;
+}) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase
     .from("weight_entries")
     .update({
       entry_date: params.entryDate,
-      weight_kg: params.weightKg
+      weight_kg: params.weightKg,
+      sport_done: params.sportDone ?? false,
+      sport_activity_type: params.sportDone ? params.sportActivityType ?? "Autre" : null,
+      sport_note: params.sportDone ? params.sportNote ?? null : null,
+      sport_updated_at: params.sportDone ? new Date().toISOString() : null
     })
     .eq("id", entryId);
 
   if (error) {
     throw error;
   }
+}
+
+export async function updateSportForWeightEntry(params: {
+  profileSlug: PersonSlug;
+  entryDate: string;
+  sportDone: boolean;
+  sportActivityType: SportActivityType | null;
+  sportNote: string | null;
+}) {
+  const supabase = getSupabaseAdmin();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("slug", params.profileSlug)
+    .single();
+
+  if (!profile) {
+    throw new Error("Participant introuvable.");
+  }
+
+  const { data: entry } = await supabase
+    .from("weight_entries")
+    .select("id")
+    .eq("profile_id", profile.id)
+    .eq("entry_date", params.entryDate)
+    .maybeSingle();
+
+  if (!entry) {
+    throw new Error("Remplis d’abord la pesée du jour pour associer une activité.");
+  }
+
+  const { error } = await supabase
+    .from("weight_entries")
+    .update({
+      sport_done: params.sportDone,
+      sport_activity_type: params.sportDone ? params.sportActivityType ?? "Autre" : null,
+      sport_note: params.sportDone ? params.sportNote : null,
+      sport_updated_at: new Date().toISOString()
+    })
+    .eq("id", entry.id);
+
+  if (error) {
+    throw error;
+  }
+
+  return { success: true };
 }
 
 export async function deleteWeightEntry(entryId: string) {

@@ -7,6 +7,7 @@ import { DevToolsPanel } from "@/components/forms/dev-tools-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SimulationBadge } from "@/components/ui/simulation-badge";
+import { SPORT_ACTIVITY_TYPES } from "@/lib/constants";
 import type { AdminPayload } from "@/lib/types";
 
 export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload }>) {
@@ -107,7 +108,10 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           entryDate: String(formData.get("entryDate")),
-          weightKg: Number(formData.get("weightKg"))
+          weightKg: Number(formData.get("weightKg")),
+          sportDone: String(formData.get("sportDone")) === "true",
+          sportActivityType: formData.get("sportActivityType") ? String(formData.get("sportActivityType")) : null,
+          sportNote: formData.get("sportNote") ? String(formData.get("sportNote")) : null
         })
       });
 
@@ -134,7 +138,10 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
         body: JSON.stringify({
           profileSlug,
           entryDate: String(formData.get("entryDate")),
-          weightKg: Number(formData.get("weightKg"))
+          weightKg: Number(formData.get("weightKg")),
+          sportDone: String(formData.get("sportDone")) === "true",
+          sportActivityType: formData.get("sportActivityType") ? String(formData.get("sportActivityType")) : null,
+          sportNote: formData.get("sportNote") ? String(formData.get("sportNote")) : null
         })
       });
 
@@ -351,6 +358,30 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
                     className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
                     required
                   />
+                  <select
+                    name="sportDone"
+                    defaultValue="false"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white sm:col-span-1"
+                  >
+                    <option value="false">Sport : non</option>
+                    <option value="true">Sport : oui</option>
+                  </select>
+                  <select
+                    name="sportActivityType"
+                    defaultValue="Autre"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                  >
+                    {SPORT_ACTIVITY_TYPES.map((activity) => (
+                      <option key={activity} value={activity}>{activity}</option>
+                    ))}
+                  </select>
+                  <input
+                    name="sportNote"
+                    type="text"
+                    maxLength={120}
+                    placeholder="Note sport"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                  />
                   <Button type="submit" className="gap-2">
                     <Plus className="h-4 w-4" />
                     Ajouter
@@ -376,6 +407,31 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
                         type="number"
                         step="0.1"
                         defaultValue={entry.weight_kg}
+                        className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                      />
+                      <select
+                        name="sportDone"
+                        defaultValue={entry.sport_done ? "true" : "false"}
+                        className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                      >
+                        <option value="false">Sport : non</option>
+                        <option value="true">Sport : oui</option>
+                      </select>
+                      <select
+                        name="sportActivityType"
+                        defaultValue={entry.sport_activity_type ?? "Autre"}
+                        className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                      >
+                        {SPORT_ACTIVITY_TYPES.map((activity) => (
+                          <option key={activity} value={activity}>{activity}</option>
+                        ))}
+                      </select>
+                      <input
+                        name="sportNote"
+                        type="text"
+                        maxLength={120}
+                        defaultValue={entry.sport_note ?? ""}
+                        placeholder="Note sport"
                         className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
                       />
                       <div className="flex gap-2">

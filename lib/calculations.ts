@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, isAfter, isBefore } from "date-fns";
+import { differenceInCalendarDays, isAfter, isBefore, startOfMonth, startOfWeek, subDays } from "date-fns";
 import {
   formatDayLabel,
   getPeriodProgressPct,
@@ -13,6 +13,7 @@ import type {
   ParticipantDashboard,
   ProfileRecord,
   ProgressStatus,
+  SportActivityType,
   WeightEntryRecord,
   WeeklyPoint
 } from "@/lib/types";
@@ -27,6 +28,32 @@ function calculateRealProgress(startWeight: number, targetWeight: number, curren
 
   const traveled = currentWeight - startWeight;
   return clamp((traveled / totalDelta) * 100, 0, 100);
+}
+
+function calculateFrequentActivity(entries: WeightEntryRecord[]): SportActivityType | null {
+  const counts = entries.reduce<Partial<Record<SportActivityType, number>>>((acc, entry) => {
+    if (!entry.sport_done || !entry.sport_activity_type) {
+      return acc;
+    }
+
+    acc[entry.sport_activity_type] = (acc[entry.sport_activity_type] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return (Object.entries(counts).sort((left, right) => right[1] - left[1])[0]?.[0] as SportActivityType | undefined) ?? null;
+}
+
+function calculateActiveStreak(entries: WeightEntryRecord[], currentDate: Date) {
+  const sportDates = new Set(entries.filter((entry) => entry.sport_done).map((entry) => entry.entry_date));
+  let streak = 0;
+  let cursor = currentDate;
+
+  while (sportDates.has(toDateString(cursor))) {
+    streak += 1;
+    cursor = subDays(cursor, 1);
+  }
+
+  return streak;
 }
 
 function determineStatus(
@@ -138,6 +165,8 @@ export function buildParticipantDashboard(params: {
         date,
         label: formatDayLabel(day),
         weight,
+        sportDone: dayEntries.some((entry) => entry.sport_done),
+        sportActivityType: dayEntries.find((entry) => entry.sport_done && entry.sport_activity_type)?.sport_activity_type ?? null,
         theoreticalWeight: calculateTheoreticalWeight(
           Number(profile.start_weight),
           Number(profile.target_weight),
@@ -164,6 +193,23 @@ export function buildParticipantDashboard(params: {
     ),
     0
   );
+  const todayString = toDateString(currentDate);
+  const todayEntry = entries.find((entry) => entry.entry_date === todayString);
+  const weekStart = toDateString(startOfWeek(currentDate, { weekStartsOn: 1 }));
+  const monthStart = toDateString(startOfMonth(currentDate));
+  const sportEntries = entries.filter((entry) => entry.sport_done);
+  const weekSessions = sportEntries.filter((entry) => entry.entry_date >= weekStart && entry.entry_date <= todayString).length;
+  const monthSessions = sportEntries.filter((entry) => entry.entry_date >= monthStart && entry.entry_date <= todayString).length;
+  const latestActivities = sportEntries
+    .filter((entry) => entry.sport_activity_type)
+    .sort((left, right) => right.entry_date.localeCompare(left.entry_date))
+    .slice(0, 5)
+    .map((entry) => ({
+      date: entry.entry_date,
+      label: formatDayLabel(parseDateString(entry.entry_date)),
+      activityType: entry.sport_activity_type as SportActivityType,
+      note: entry.sport_note ?? null
+    }));
 
   return {
     id: profile.id,
@@ -180,6 +226,20 @@ export function buildParticipantDashboard(params: {
     gaugeColor: profile.accent_color,
     messagePoolSize,
     chart,
-    history
+    history,
+    todaySport: {
+      entryDate: todayString,
+      hasWeightEntry: Boolean(todayEntry),
+      sportDone: todayEntry?.sport_done ?? false,
+      sportActivityType: todayEntry?.sport_activity_type ?? null,
+      sportNote: todayEntry?.sport_note ?? null
+    },
+    sportStats: {
+      weekSessions,
+      monthSessions,
+      frequentActivity: calculateFrequentActivity(sportEntries),
+      activeStreakDays: calculateActiveStreak(entries, currentDate),
+      latestActivities
+    }
   };
 }
