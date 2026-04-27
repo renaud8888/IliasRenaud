@@ -28,9 +28,24 @@ function getRecipientEmail(slug: PersonSlug) {
   return env[PERSON_EMAIL_ENV_KEYS[slug]] ?? "";
 }
 
+async function sendEmailOrThrow(params: {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const resend = getResendClient();
+  const result = await resend.emails.send(params);
+
+  if (result.error) {
+    throw new Error(`Resend a refusé l'email "${params.subject}" vers ${params.to}: ${result.error.message}`);
+  }
+
+  return result.data;
+}
+
 export async function sendWeeklySummaryEmails() {
   const env = getEmailEnv();
-  const resend = getResendClient();
   const dashboard = await getDashboardData();
   const { profiles, messages } = await getBaseData();
   const currentAppDate = parseDateString(dashboard.dateContext.currentDate);
@@ -65,17 +80,17 @@ export async function sendWeeklySummaryEmails() {
       continue;
     }
 
-    await resend.emails.send({
+    await sendEmailOrThrow({
       from: env.RESEND_FROM_EMAIL,
       to: recipient,
       subject: `Résumé hebdo - ${participant.firstName}`,
-      html: buildWeeklySummaryEmail({
-        participant,
-        counterpart,
-        motivation,
-        currentDateLabel: format(currentAppDate, "d MMMM yyyy")
-      })
-    });
+        html: buildWeeklySummaryEmail({
+          participant,
+          counterpart,
+          motivation,
+          currentDateLabel: format(currentAppDate, "d MMMM yyyy", { locale: fr })
+        })
+      });
 
     if (profile) {
       await logEmail({
@@ -86,26 +101,29 @@ export async function sendWeeklySummaryEmails() {
   }
 }
 
-async function hasRecentReminder(profileId: string, cooldownDays: number) {
+async function hasReminderForMissedDate(profileId: string, missedEntryDate: string) {
   const supabase = getSupabaseAdmin();
-  const sinceDate = toDateString(subDays(await getCurrentAppDate(), cooldownDays));
   const { data } = await supabase
     .from("email_logs")
     .select("id")
     .eq("profile_id", profileId)
     .eq("email_type", "missed_entry_reminder")
-    .gte("sent_at", `${sinceDate}T00:00:00`);
+    .eq("reminder_window_start", missedEntryDate)
+    .limit(1);
 
   return (data?.length ?? 0) > 0;
 }
 
-function getLatestEntryDateForProfile(profileId: string, entries: Array<{ profile_id: string; entry_date: string }>) {
-  return entries.find((entry) => entry.profile_id === profileId)?.entry_date ?? null;
+function hasEntryForProfileDate(
+  profileId: string,
+  entryDate: string,
+  entries: Array<{ profile_id: string; entry_date: string }>
+) {
+  return entries.some((entry) => entry.profile_id === profileId && entry.entry_date === entryDate);
 }
 
 export async function sendMissedEntryReminders() {
   const env = getEmailEnv();
-  const resend = getResendClient();
   const { settings, profiles, entries, messages } = await getBaseData();
 
   if (!settings.missed_entry_email_enabled) {
@@ -113,20 +131,18 @@ export async function sendMissedEntryReminders() {
   }
 
   const today = await getCurrentAppDate();
-  const reminderWindowStart = toDateString(subDays(today, 2));
+  const missedEntryDate = toDateString(subDays(today, 1));
   let sentCount = 0;
 
   for (const profile of profiles) {
     const recipient = getRecipientEmail(profile.slug);
-    const latestEntryDate = getLatestEntryDateForProfile(profile.id, entries);
-    const missedSince =
-      latestEntryDate === null || latestEntryDate < reminderWindowStart;
+    const hasYesterdayEntry = hasEntryForProfileDate(profile.id, missedEntryDate, entries);
 
-    if (!missedSince) {
+    if (hasYesterdayEntry) {
       continue;
     }
 
-    const alreadySent = await hasRecentReminder(profile.id, settings.reminder_cooldown_days);
+    const alreadySent = await hasReminderForMissedDate(profile.id, missedEntryDate);
 
     if (alreadySent) {
       continue;
@@ -141,7 +157,7 @@ export async function sendMissedEntryReminders() {
       continue;
     }
 
-    await resend.emails.send({
+    await sendEmailOrThrow({
       from: env.RESEND_FROM_EMAIL,
       to: recipient,
       subject: `Rappel pesée - ${profile.first_name}`,
@@ -154,7 +170,7 @@ export async function sendMissedEntryReminders() {
     await logEmail({
       profileId: profile.id,
       emailType: "missed_entry_reminder",
-      reminderWindowStart
+      reminderWindowStart: missedEntryDate
     });
     sentCount += 1;
   }
@@ -173,5 +189,6 @@ export function buildWeeklyEmailPreview(participant: ParticipantDashboard) {
 
 export async function isWithinWeeklySendWindow(expectedLocalHour: string) {
   const now = await getCurrentAppDate();
-  return format(now, "i") === "1" && format(now, "HH:00") === expectedLocalHour;
+  void expectedLocalHour;
+  return format(now, "i") === "1";
 }

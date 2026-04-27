@@ -66,7 +66,7 @@ export function buildMissedEntryReminderEmail(params: { firstName: string; motiv
       <div style="max-width:560px;margin:0 auto;background:#111827;border:1px solid #1f2937;border-radius:24px;padding:28px;">
         <p style="margin:0 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#94a3b8;">Rappel léger</p>
         <h1 style="margin:0 0 12px;font-size:28px;line-height:1.1;">${params.firstName}, on n'oublie pas la pesée.</h1>
-        <p style="margin:0 0 14px;font-size:15px;color:#cbd5e1;">Aucune entrée détectée depuis 3 jours. Une mesure aujourd'hui suffit pour relancer la dynamique.</p>
+        <p style="margin:0 0 14px;font-size:15px;color:#cbd5e1;">La pesée d'hier n'a pas encore été encodée. Tu peux la compléter avec la bonne date pour garder le suivi propre.</p>
         <div style="background:#0f172a;border-radius:18px;padding:16px;">
           <p style="margin:0;font-size:15px;color:#e2e8f0;">${params.motivation}</p>
         </div>

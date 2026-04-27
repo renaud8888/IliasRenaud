@@ -16,8 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         skipped: true,
-        reason: "outside_configured_local_hour",
-        expectedLocalHour: settings.weekly_email_hour_local
+        reason: "not_monday"
       });
     }
 

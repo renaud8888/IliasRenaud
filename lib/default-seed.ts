@@ -104,6 +104,6 @@ export const DEV_SCENARIOS: DevScenarioDefinition[] = [
   { key: "scenario-d", title: "D - Utilisateur en retard", description: "Ilias avance trop lentement par rapport au cap théorique." },
   { key: "scenario-e", title: "E - Utilisateur en avance", description: "Renaud dépasse la progression attendue." },
   { key: "scenario-f", title: "F - Semaine incomplète", description: "Semaine actuelle partielle pour tester la moyenne incomplète." },
-  { key: "scenario-g", title: "G - Oubli depuis 3 jours", description: "Aucune pesée récente pour déclencher le rappel d’oubli." },
+  { key: "scenario-g", title: "G - Pesée d’hier oubliée", description: "La pesée de la veille manque pour déclencher le rappel d’oubli." },
   { key: "scenario-h", title: "H - Lundi midi simulé", description: "Date simulée lundi à midi pour tester l’email hebdomadaire." }
 ];

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, LoaderCircle, PencilLine, Save, Trash2 } from "lucide-react";
+import { CheckCircle2, LoaderCircle, PencilLine, Plus, Save, Trash2 } from "lucide-react";
 import { DevToolsPanel } from "@/components/forms/dev-tools-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,6 +40,7 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
       }, {}),
     [initialData]
   );
+  const defaultEntryDate = initialData.runtime.dateContext.currentDate.slice(0, 10);
 
   function updateProfileField(id: string, field: "start_weight" | "target_weight", value: string) {
     setForm((current) => ({
@@ -122,6 +123,33 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
     });
   }
 
+  async function createEntry(profileSlug: string, formData: FormData) {
+    setError(null);
+    setSuccess(null);
+
+    startTransition(async () => {
+      const response = await fetch("/api/weights", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          profileSlug,
+          entryDate: String(formData.get("entryDate")),
+          weightKg: Number(formData.get("weightKg"))
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error ?? "Ajout impossible.");
+        return;
+      }
+
+      setSuccess("Pesée ajoutée.");
+      router.refresh();
+    });
+  }
+
   async function deleteEntry(entryId: string) {
     setError(null);
     setSuccess(null);
@@ -196,30 +224,6 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
                 onChange={(event) => setForm((current) => ({
                   ...current,
                   settings: { ...current.settings, end_date: event.target.value }
-                }))}
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-200">Cooldown rappel (jours)</span>
-              <input
-                type="number"
-                value={form.settings.reminder_cooldown_days}
-                onChange={(event) => setForm((current) => ({
-                  ...current,
-                  settings: { ...current.settings, reminder_cooldown_days: Number(event.target.value) }
-                }))}
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-200">Heure email hebdo (locale, pile)</span>
-              <input
-                type="time"
-                value={form.settings.weekly_email_hour_local}
-                onChange={(event) => setForm((current) => ({
-                  ...current,
-                  settings: { ...current.settings, weekly_email_hour_local: event.target.value }
                 }))}
                 className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
               />
@@ -315,54 +319,92 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        {Object.entries(groupedEntries).map(([slug, entries]) => (
-          <Card key={slug}>
-            <p className="section-title">Corrections quotidiennes</p>
-            <h3 className="mt-2 font-[var(--font-heading)] text-3xl font-bold">
-              {entries[0]?.first_name ?? slug}
-            </h3>
-            <div className="mt-4 space-y-4">
-              {entries.map((entry) => (
-                <form
-                  key={entry.id}
-                  action={(formData) => updateEntry(entry.id, formData)}
-                  className="rounded-[24px] border border-white/10 bg-white/5 p-4"
-                >
-                  <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-                    <input
-                      name="entryDate"
-                      type="date"
-                      defaultValue={entry.entry_date}
-                      className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
-                    />
-                    <input
-                      name="weightKg"
-                      type="number"
-                      step="0.1"
-                      defaultValue={entry.weight_kg}
-                      className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
-                    />
-                    <div className="flex gap-2">
-                      <Button type="submit" variant="secondary" className="gap-2">
-                        <PencilLine className="h-4 w-4" />
-                        Corriger
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        className="gap-2"
-                        onClick={() => deleteEntry(entry.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Supprimer
-                      </Button>
+        {initialData.profiles.map((profile) => {
+          const entries = groupedEntries[profile.slug] ?? [];
+
+          return (
+            <Card key={profile.slug}>
+              <p className="section-title">Corrections quotidiennes</p>
+              <h3 className="mt-2 font-[var(--font-heading)] text-3xl font-bold">
+                {profile.first_name}
+              </h3>
+              <form
+                action={(formData) => createEntry(profile.slug, formData)}
+                className="mt-4 rounded-[24px] border border-emerald-300/15 bg-emerald-500/10 p-4"
+              >
+                <p className="mb-3 text-sm font-semibold text-emerald-100">Ajouter ou remplacer une pesée</p>
+                <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                  <input
+                    name="entryDate"
+                    type="date"
+                    defaultValue={defaultEntryDate}
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                    required
+                  />
+                  <input
+                    name="weightKg"
+                    type="number"
+                    step="0.1"
+                    min="30"
+                    max="250"
+                    placeholder="Poids"
+                    className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                    required
+                  />
+                  <Button type="submit" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Ajouter
+                  </Button>
+                </div>
+              </form>
+              <div className="mt-4 space-y-4">
+                {entries.map((entry) => (
+                  <form
+                    key={entry.id}
+                    action={(formData) => updateEntry(entry.id, formData)}
+                    className="rounded-[24px] border border-white/10 bg-white/5 p-4"
+                  >
+                    <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                      <input
+                        name="entryDate"
+                        type="date"
+                        defaultValue={entry.entry_date}
+                        className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                      />
+                      <input
+                        name="weightKg"
+                        type="number"
+                        step="0.1"
+                        defaultValue={entry.weight_kg}
+                        className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white"
+                      />
+                      <div className="flex gap-2">
+                        <Button type="submit" variant="secondary" className="gap-2">
+                          <PencilLine className="h-4 w-4" />
+                          Corriger
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="danger"
+                          className="gap-2"
+                          onClick={() => deleteEntry(entry.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Supprimer
+                        </Button>
+                      </div>
                     </div>
+                  </form>
+                ))}
+                {entries.length === 0 ? (
+                  <div className="rounded-[24px] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-400">
+                    Aucune pesée enregistrée pour le moment.
                   </div>
-                </form>
-              ))}
-            </div>
-          </Card>
-        ))}
+                ) : null}
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       <DevToolsPanel runtime={initialData.runtime} profiles={initialData.profiles} />

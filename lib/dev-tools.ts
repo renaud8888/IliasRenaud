@@ -450,7 +450,7 @@ export async function resetToSystemDate() {
 }
 
 function getReminderReason(profileName: string) {
-  return `${profileName} n'a aucun poids encodé sur les 3 derniers jours applicatifs.`;
+  return `${profileName} n'a pas encore de pesée pour hier.`;
 }
 
 export async function previewWeeklyEmails(): Promise<DevEmailDryRunItem[]> {
@@ -479,16 +479,19 @@ export async function previewWeeklyEmails(): Promise<DevEmailDryRunItem[]> {
   }));
 }
 
-export async function previewMissedReminderEmails(): Promise<DevEmailDryRunItem[]> {
+export async function previewMissedReminderEmails(options?: { includeAllProfiles?: boolean }): Promise<DevEmailDryRunItem[]> {
   const emailEnv = getEmailEnv();
   const { profiles, entries } = await getBaseData();
   const appDate = await getCurrentAppDate();
-  const reminderWindowStart = toDateString(subDays(appDate, 2));
+  const missedEntryDate = toDateString(subDays(appDate, 1));
 
   return profiles
     .filter((profile) => {
-      const latestEntry = entries.find((entry) => entry.profile_id === profile.id)?.entry_date ?? null;
-      return latestEntry === null || latestEntry < reminderWindowStart;
+      if (options?.includeAllProfiles) {
+        return true;
+      }
+
+      return !entries.some((entry) => entry.profile_id === profile.id && entry.entry_date === missedEntryDate);
     })
     .map((profile) => ({
       profileSlug: profile.slug,
@@ -503,7 +506,9 @@ export async function previewMissedReminderEmails(): Promise<DevEmailDryRunItem[
       reason: getReminderReason(profile.first_name),
       html: buildMissedEntryReminderEmail({
         firstName: profile.first_name,
-        motivation: "Preview de test: rappel d'oubli."
+        motivation: options?.includeAllProfiles
+          ? "Test manuel: vérification de l'envoi du rappel d'oubli."
+          : "Preview de test: rappel d'oubli."
       })
     }));
 }
@@ -536,7 +541,7 @@ export async function sendWeeklyEmailsForTest() {
         profileSlug: item.profileSlug,
         firstName: item.firstName,
         to: item.to,
-        subject: `[TEST] ${item.subject}`,
+        subject: item.subject,
         status: "skipped",
         id: null,
         error: "Aucun email destinataire configuré."
@@ -547,7 +552,7 @@ export async function sendWeeklyEmailsForTest() {
     const result = await resend.emails.send({
       from: emailEnv.RESEND_FROM_EMAIL,
       to: item.to,
-      subject: `[TEST] ${item.subject}`,
+      subject: item.subject,
       html: item.html
     });
 
@@ -555,7 +560,7 @@ export async function sendWeeklyEmailsForTest() {
       profileSlug: item.profileSlug,
       firstName: item.firstName,
       to: item.to,
-      subject: `[TEST] ${item.subject}`,
+      subject: item.subject,
       status: result.error ? "failed" : "sent",
       id: result.data?.id ?? null,
       error: result.error?.message ?? null
@@ -576,7 +581,7 @@ export async function sendWeeklyEmailsForTest() {
 export async function sendReminderEmailsForTest() {
   const resend = getResendClient();
   const emailEnv = getEmailEnv();
-  const items = await previewMissedReminderEmails();
+  const items = await previewMissedReminderEmails({ includeAllProfiles: true });
   const results: DevEmailSendResult[] = [];
 
   for (const item of items) {
@@ -585,7 +590,7 @@ export async function sendReminderEmailsForTest() {
         profileSlug: item.profileSlug,
         firstName: item.firstName,
         to: item.to,
-        subject: `[TEST] ${item.subject}`,
+        subject: item.subject,
         status: "skipped",
         id: null,
         error: "Aucun email destinataire configuré."
@@ -596,7 +601,7 @@ export async function sendReminderEmailsForTest() {
     const result = await resend.emails.send({
       from: emailEnv.RESEND_FROM_EMAIL,
       to: item.to,
-      subject: `[TEST] ${item.subject}`,
+      subject: item.subject,
       html: item.html
     });
 
@@ -604,7 +609,7 @@ export async function sendReminderEmailsForTest() {
       profileSlug: item.profileSlug,
       firstName: item.firstName,
       to: item.to,
-      subject: `[TEST] ${item.subject}`,
+      subject: item.subject,
       status: result.error ? "failed" : "sent",
       id: result.data?.id ?? null,
       error: result.error?.message ?? null

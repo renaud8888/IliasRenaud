@@ -231,7 +231,7 @@ Carte `Scénarios de test`:
 - `D`: utilisateur en retard
 - `E`: utilisateur en avance
 - `F`: semaine incomplète
-- `G`: aucun poids depuis 3 jours
+- `G`: pesée de la veille manquante
 - `H`: lundi midi simulé pour tester le mail hebdomadaire
 
 Carte `Génération de données`:
@@ -279,7 +279,7 @@ Carte `Snapshot`:
 ### Rappel d’oubli
 
 - route: `/api/cron/check-missed-entries`
-- vérifie chaque jour si une personne n’a rien encodé depuis 3 jours
+- vérifie chaque jour si une personne n’a pas encodé la pesée de la veille
 - utilise la table `email_logs` pour éviter des rappels trop rapprochés
 
 ### Tester les emails sans attendre
@@ -291,7 +291,7 @@ Depuis `/admin` > `Simulation & tests`:
 - `Tester email hebdomadaire`
 - `Tester rappel oubli`
 
-Pour tester précisément le créneau du lundi midi:
+Pour tester précisément le rappel du lundi:
 
 - activer une date simulée manuellement
 - ou injecter directement le scénario `H`
@@ -305,15 +305,10 @@ Pour tester précisément le créneau du lundi midi:
 
 Le fichier [vercel.json](/Users/Renaud_Lothaire/Downloads/IliasRenaud/vercel.json) contient déjà:
 
-- un cron quotidien à `10:00 UTC` pour le résumé hebdomadaire
+- un cron quotidien à `10:00 UTC` pour le résumé hebdomadaire, qui envoie seulement si la date applicative est un lundi
 - un cron quotidien à `07:00 UTC`
 
-Sur Vercel Hobby, un cron ne peut pas s’exécuter plus d’une fois par jour. Le projet utilise donc un cron quotidien à `10:00 UTC`, et la route n’envoie réellement le résumé hebdomadaire que si l’on est lundi à l’heure locale configurée.
-
-Important: sur Hobby, comme le cron ne passe qu’une fois par jour, `weekly_email_hour_local` doit rester aligné avec ce passage quotidien.
-Pour la Belgique en période estivale, `10:00 UTC` correspond à `12:00`.
-Si vous voulez une autre heure en Hobby, il faut modifier [vercel.json](/Users/Renaud_Lothaire/Downloads/IliasRenaud/vercel.json) puis redéployer.
-Si vous voulez un horaire réellement libre depuis l’admin sans redéploiement, il faut passer en Vercel Pro ou utiliser un scheduler externe.
+Sur Vercel Hobby, un cron ne peut pas s’exécuter plus d’une fois par jour. Le projet utilise donc un cron quotidien à `10:00 UTC`, et la route n’envoie réellement le résumé hebdomadaire que si l’on est lundi. Les logs d’emails évitent les doublons si la route est appelée plusieurs fois le même lundi.
 
 ## Configuration du cron secret
 

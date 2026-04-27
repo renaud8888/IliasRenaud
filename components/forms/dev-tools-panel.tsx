@@ -54,6 +54,9 @@ export function DevToolsPanel({
   });
   const [previewItems, setPreviewItems] = useState<DevEmailDryRunItem[]>([]);
   const [emailSendResults, setEmailSendResults] = useState<DevEmailSendResult[]>([]);
+  const [emailPanelHint, setEmailPanelHint] = useState(
+    "Lance un dry-run pour voir à qui l’email serait envoyé, pourquoi et avec quelles données."
+  );
 
   if (!runtime.devToolsEnabled) {
     return null;
@@ -114,12 +117,20 @@ export function DevToolsPanel({
     setError(null);
     setSuccess(null);
     setEmailSendResults([]);
+    setPreviewItems([]);
 
     startTransition(async () => {
       try {
         const result = await postDevAction({ action });
         const results = Array.isArray(result.results) ? result.results : [];
         setEmailSendResults(results);
+        setEmailPanelHint(
+          results.length > 0
+            ? "Résultat du dernier test d’envoi."
+            : action === "send-test-reminder-email"
+              ? "Aucun rappel d’oubli à tester : toutes les personnes ont une pesée récente, ou aucun destinataire n’est éligible."
+              : "Aucun email hebdomadaire à tester."
+        );
         setSuccess(`${result.sent ?? 0} envoyé(s), ${result.failed ?? 0} refusé(s), ${result.skipped ?? 0} ignoré(s).`);
       } catch (caughtError) {
         setError(caughtError instanceof Error ? caughtError.message : "Erreur email inconnue.");
@@ -334,6 +345,12 @@ export function DevToolsPanel({
                     runAction(async () => {
                       const result = await postDevAction({ action: "preview-weekly-email" });
                       setPreviewItems(result.items ?? []);
+                      setEmailSendResults([]);
+                      setEmailPanelHint(
+                        (result.items ?? []).length > 0
+                          ? "Preview du résumé hebdomadaire."
+                          : "Aucun email hebdomadaire à prévisualiser."
+                      );
                     }, "Preview du résumé hebdomadaire prête.")
                   }
                 >
@@ -346,6 +363,12 @@ export function DevToolsPanel({
                     runAction(async () => {
                       const result = await postDevAction({ action: "preview-reminder-email" });
                       setPreviewItems(result.items ?? []);
+                      setEmailSendResults([]);
+                      setEmailPanelHint(
+                        (result.items ?? []).length > 0
+                          ? "Preview du rappel d’oubli."
+                          : "Aucun rappel d’oubli à envoyer : toutes les personnes ont une pesée récente."
+                      );
                     }, "Preview du rappel d’oubli prête.")
                   }
                 >
@@ -407,7 +430,7 @@ export function DevToolsPanel({
                   ))
                 ) : (
                   <p className="text-sm text-slate-400">
-                    Lance un dry-run pour voir à qui l’email serait envoyé, pourquoi et avec quelles données.
+                    {emailPanelHint}
                   </p>
                 )}
               </div>
