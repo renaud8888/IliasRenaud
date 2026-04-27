@@ -100,6 +100,18 @@ export interface ParticipantSportStats {
   monthSessions: number;
   frequentActivity: SportActivityType | null;
   activeStreakDays: number;
+  weekActivities: Array<{
+    date: string;
+    label: string;
+    activityType: SportActivityType;
+    note: string | null;
+  }>;
+  monthActivities: Array<{
+    date: string;
+    label: string;
+    activityType: SportActivityType;
+    note: string | null;
+  }>;
   latestActivities: Array<{
     date: string;
     label: string;

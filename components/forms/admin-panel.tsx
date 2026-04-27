@@ -8,13 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SimulationBadge } from "@/components/ui/simulation-badge";
 import { SPORT_ACTIVITY_TYPES } from "@/lib/constants";
-import type { AdminPayload } from "@/lib/types";
+import type { AdminPayload, SportActivityType } from "@/lib/types";
+
+type EntryFeedback = {
+  type: "pending" | "success" | "error";
+  message: string;
+};
 
 export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload }>) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [weightEntries, setWeightEntries] = useState(initialData.weightEntries);
+  const [entryFeedback, setEntryFeedback] = useState<Record<string, EntryFeedback>>({});
   const [form, setForm] = useState(() => ({
     settings: initialData.settings,
     profiles: initialData.profiles.map((profile) => ({
@@ -34,12 +41,12 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
 
   const groupedEntries = useMemo(
     () =>
-      initialData.weightEntries.reduce<Record<string, typeof initialData.weightEntries>>((acc, entry) => {
+      weightEntries.reduce<Record<string, typeof weightEntries>>((acc, entry) => {
         acc[entry.slug] ??= [];
         acc[entry.slug].push(entry);
         return acc;
       }, {}),
-    [initialData]
+    [weightEntries]
   );
   const defaultEntryDate = initialData.runtime.dateContext.currentDate.slice(0, 10);
 
@@ -101,29 +108,62 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
   async function updateEntry(entryId: string, formData: FormData) {
     setError(null);
     setSuccess(null);
+    const nextEntry = {
+      entry_date: String(formData.get("entryDate")),
+      weight_kg: Number(formData.get("weightKg")),
+      sport_done: String(formData.get("sportDone")) === "true",
+      sport_activity_type: formData.get("sportActivityType") ? String(formData.get("sportActivityType")) as SportActivityType : null,
+      sport_note: formData.get("sportNote") ? String(formData.get("sportNote")) : null
+    };
+    setEntryFeedback((current) => ({
+      ...current,
+      [entryId]: { type: "pending", message: "Correction en cours..." }
+    }));
 
     startTransition(async () => {
       const response = await fetch(`/api/admin/weights/${entryId}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          entryDate: String(formData.get("entryDate")),
-          weightKg: Number(formData.get("weightKg")),
-          sportDone: String(formData.get("sportDone")) === "true",
-          sportActivityType: formData.get("sportActivityType") ? String(formData.get("sportActivityType")) : null,
-          sportNote: formData.get("sportNote") ? String(formData.get("sportNote")) : null
+          entryDate: nextEntry.entry_date,
+          weightKg: nextEntry.weight_kg,
+          sportDone: nextEntry.sport_done,
+          sportActivityType: nextEntry.sport_activity_type,
+          sportNote: nextEntry.sport_note
         })
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error ?? "Modification impossible.");
+        setEntryFeedback((current) => ({
+          ...current,
+          [entryId]: { type: "error", message: result.error ?? "Modification impossible." }
+        }));
         return;
       }
 
-      setSuccess("Entrée corrigée.");
-      router.refresh();
+      setWeightEntries((current) =>
+        current
+          .map((entry) =>
+            entry.id === entryId
+              ? {
+                  ...entry,
+                  entry_date: nextEntry.entry_date,
+                  weight_kg: nextEntry.weight_kg,
+                  sport_done: nextEntry.sport_done,
+                  sport_activity_type: nextEntry.sport_done ? nextEntry.sport_activity_type : null,
+                  sport_note: nextEntry.sport_done ? nextEntry.sport_note : null,
+                  sport_updated_at: nextEntry.sport_done ? new Date().toISOString() : null
+                }
+              : entry
+          )
+          .sort((left, right) => right.entry_date.localeCompare(left.entry_date))
+      );
+      setEntryFeedback((current) => ({
+        ...current,
+        [entryId]: { type: "success", message: "Pesée corrigée et enregistrée." }
+      }));
     });
   }
 
@@ -166,12 +206,15 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error ?? "Suppression impossible.");
+        setEntryFeedback((current) => ({
+          ...current,
+          [entryId]: { type: "error", message: result.error ?? "Suppression impossible." }
+        }));
         return;
       }
 
+      setWeightEntries((current) => current.filter((entry) => entry.id !== entryId));
       setSuccess("Entrée supprimée.");
-      router.refresh();
     });
   }
 
@@ -450,6 +493,26 @@ export function AdminPanel({ initialData }: Readonly<{ initialData: AdminPayload
                         </Button>
                       </div>
                     </div>
+                    {entryFeedback[entry.id] ? (
+                      <div
+                        className={
+                          entryFeedback[entry.id].type === "success"
+                            ? "mt-3 rounded-[18px] border border-emerald-300/20 bg-emerald-500/12 px-4 py-3 text-sm font-semibold text-emerald-200"
+                            : entryFeedback[entry.id].type === "error"
+                              ? "mt-3 rounded-[18px] border border-red-300/20 bg-red-500/12 px-4 py-3 text-sm font-semibold text-red-200"
+                              : "mt-3 rounded-[18px] border border-white/10 bg-slate-950/50 px-4 py-3 text-sm font-semibold text-slate-200"
+                        }
+                      >
+                        <div className="flex items-center gap-2">
+                          {entryFeedback[entry.id].type === "pending" ? (
+                            <LoaderCircle className="h-4 w-4 animate-spin" />
+                          ) : entryFeedback[entry.id].type === "success" ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : null}
+                          <span>{entryFeedback[entry.id].message}</span>
+                        </div>
+                      </div>
+                    ) : null}
                   </form>
                 ))}
                 {entries.length === 0 ? (

@@ -198,18 +198,22 @@ export function buildParticipantDashboard(params: {
   const weekStart = toDateString(startOfWeek(currentDate, { weekStartsOn: 1 }));
   const monthStart = toDateString(startOfMonth(currentDate));
   const sportEntries = entries.filter((entry) => entry.sport_done);
-  const weekSessions = sportEntries.filter((entry) => entry.entry_date >= weekStart && entry.entry_date <= todayString).length;
-  const monthSessions = sportEntries.filter((entry) => entry.entry_date >= monthStart && entry.entry_date <= todayString).length;
+  const weekSportEntries = sportEntries.filter((entry) => entry.entry_date >= weekStart && entry.entry_date <= todayString);
+  const monthSportEntries = sportEntries.filter((entry) => entry.entry_date >= monthStart && entry.entry_date <= todayString);
+  const mapActivity = (entry: WeightEntryRecord) => ({
+    date: entry.entry_date,
+    label: formatDayLabel(parseDateString(entry.entry_date)),
+    activityType: entry.sport_activity_type as SportActivityType,
+    note: entry.sport_note ?? null
+  });
+  const sortRecent = (left: WeightEntryRecord, right: WeightEntryRecord) => right.entry_date.localeCompare(left.entry_date);
+  const weekSessions = weekSportEntries.length;
+  const monthSessions = monthSportEntries.length;
   const latestActivities = sportEntries
     .filter((entry) => entry.sport_activity_type)
-    .sort((left, right) => right.entry_date.localeCompare(left.entry_date))
+    .sort(sortRecent)
     .slice(0, 5)
-    .map((entry) => ({
-      date: entry.entry_date,
-      label: formatDayLabel(parseDateString(entry.entry_date)),
-      activityType: entry.sport_activity_type as SportActivityType,
-      note: entry.sport_note ?? null
-    }));
+    .map(mapActivity);
 
   return {
     id: profile.id,
@@ -239,6 +243,8 @@ export function buildParticipantDashboard(params: {
       monthSessions,
       frequentActivity: calculateFrequentActivity(sportEntries),
       activeStreakDays: calculateActiveStreak(entries, currentDate),
+      weekActivities: weekSportEntries.filter((entry) => entry.sport_activity_type).sort(sortRecent).map(mapActivity),
+      monthActivities: monthSportEntries.filter((entry) => entry.sport_activity_type).sort(sortRecent).map(mapActivity),
       latestActivities
     }
   };

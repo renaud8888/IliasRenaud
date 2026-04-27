@@ -67,38 +67,36 @@ export function SportEntryForm({
     });
   }
 
+  if (!todaySport.hasWeightEntry) {
+    return null;
+  }
+
   return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="section-title">Sport du jour</p>
-          {todaySport.sportDone && todaySport.sportActivityType ? (
-            <p className="mt-1 text-sm font-bold text-white">Sport fait : {todaySport.sportActivityType}</p>
-          ) : todaySport.hasWeightEntry ? (
-            <p className="mt-1 text-sm font-bold text-slate-300">Sport aujourd’hui : pas encore</p>
-          ) : (
-            <p className="mt-1 text-sm font-bold text-slate-300">Pesée du jour à remplir</p>
-          )}
-        </div>
-        {todaySport.sportDone ? (
-          <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-500/12 px-3 py-2 text-xs font-bold text-emerald-200">
-            <CheckCircle2 className="h-4 w-4" />
-            Fait
-          </span>
-        ) : todaySport.hasWeightEntry ? (
-          <Button
+    <>
+      <div className="inline-flex">
+        {todaySport.sportDone && todaySport.sportActivityType ? (
+          <button
             type="button"
-            className="shrink-0 gap-2 rounded-2xl px-3 py-2 text-sm"
             onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-500/12 px-3 py-2 text-xs font-bold text-emerald-200 transition hover:bg-emerald-500/18"
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            Sport fait : {todaySport.sportActivityType}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-extrabold text-white shadow-[0_0_18px_rgba(255,255,255,0.08)] transition"
             style={{ background: `linear-gradient(135deg, ${accentColor}CC, ${accentColor})` }}
           >
             <Plus className="h-4 w-4" />
-            Ajouter
-          </Button>
-        ) : null}
+            J’ai fait du sport
+          </button>
+        )}
       </div>
 
-      {success ? <p className="mt-3 text-sm font-semibold text-emerald-300">{success}</p> : null}
+      {success ? <p className="text-sm font-semibold text-emerald-300">{success}</p> : null}
 
       <Modal open={open} onOpenChange={setOpen} title="Ajouter le sport du jour">
         <div className="space-y-4">
@@ -161,6 +159,6 @@ export function SportEntryForm({
           </Button>
         </div>
       </Modal>
-    </div>
+    </>
   );
 }
