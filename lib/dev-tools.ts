@@ -20,6 +20,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getRuntimeSettings, resetRuntimeSettings, updateRuntimeSettings } from "@/lib/runtime";
 import type {
   DevEmailDryRunItem,
+  DevEmailSendResult,
   DevGenerateRequest,
   DevSnapshot,
   DevTrendMode,
@@ -527,37 +528,96 @@ export async function sendWeeklyEmailsForTest() {
   const resend = getResendClient();
   const emailEnv = getEmailEnv();
   const items = await previewWeeklyEmails();
+  const results: DevEmailSendResult[] = [];
 
   for (const item of items) {
-    await resend.emails.send({
+    if (!item.to) {
+      results.push({
+        profileSlug: item.profileSlug,
+        firstName: item.firstName,
+        to: item.to,
+        subject: `[TEST] ${item.subject}`,
+        status: "skipped",
+        id: null,
+        error: "Aucun email destinataire configuré."
+      });
+      continue;
+    }
+
+    const result = await resend.emails.send({
       from: emailEnv.RESEND_FROM_EMAIL,
       to: item.to,
       subject: `[TEST] ${item.subject}`,
       html: item.html
     });
+
+    results.push({
+      profileSlug: item.profileSlug,
+      firstName: item.firstName,
+      to: item.to,
+      subject: `[TEST] ${item.subject}`,
+      status: result.error ? "failed" : "sent",
+      id: result.data?.id ?? null,
+      error: result.error?.message ?? null
+    });
   }
 
-  await insertTestEmailLogs("weekly_summary");
-  return { success: true, sent: items.length };
+  const sent = results.filter((item) => item.status === "sent").length;
+  const failed = results.filter((item) => item.status === "failed").length;
+  const skipped = results.filter((item) => item.status === "skipped").length;
+
+  if (sent > 0) {
+    await insertTestEmailLogs("weekly_summary");
+  }
+
+  return { success: failed === 0, sent, failed, skipped, results };
 }
 
 export async function sendReminderEmailsForTest() {
   const resend = getResendClient();
   const emailEnv = getEmailEnv();
   const items = await previewMissedReminderEmails();
+  const results: DevEmailSendResult[] = [];
 
   for (const item of items) {
-    await resend.emails.send({
+    if (!item.to) {
+      results.push({
+        profileSlug: item.profileSlug,
+        firstName: item.firstName,
+        to: item.to,
+        subject: `[TEST] ${item.subject}`,
+        status: "skipped",
+        id: null,
+        error: "Aucun email destinataire configuré."
+      });
+      continue;
+    }
+
+    const result = await resend.emails.send({
       from: emailEnv.RESEND_FROM_EMAIL,
       to: item.to,
       subject: `[TEST] ${item.subject}`,
       html: item.html
     });
+
+    results.push({
+      profileSlug: item.profileSlug,
+      firstName: item.firstName,
+      to: item.to,
+      subject: `[TEST] ${item.subject}`,
+      status: result.error ? "failed" : "sent",
+      id: result.data?.id ?? null,
+      error: result.error?.message ?? null
+    });
   }
 
-  if (items.length > 0) {
+  const sent = results.filter((item) => item.status === "sent").length;
+  const failed = results.filter((item) => item.status === "failed").length;
+  const skipped = results.filter((item) => item.status === "skipped").length;
+
+  if (sent > 0) {
     await insertTestEmailLogs("missed_entry_reminder");
   }
 
-  return { success: true, sent: items.length };
+  return { success: failed === 0, sent, failed, skipped, results };
 }

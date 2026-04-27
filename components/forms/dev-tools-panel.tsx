@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SimulationBadge } from "@/components/ui/simulation-badge";
-import type { AdminPayload, AppDateContext, DevEmailDryRunItem } from "@/lib/types";
+import type { AdminPayload, AppDateContext, DevEmailDryRunItem, DevEmailSendResult } from "@/lib/types";
 
 function toDateTimeLocalValue(value: string | null) {
   if (!value) {
@@ -53,6 +53,7 @@ export function DevToolsPanel({
     includeMissingDays: true
   });
   const [previewItems, setPreviewItems] = useState<DevEmailDryRunItem[]>([]);
+  const [emailSendResults, setEmailSendResults] = useState<DevEmailSendResult[]>([]);
 
   if (!runtime.devToolsEnabled) {
     return null;
@@ -107,6 +108,23 @@ export function DevToolsPanel({
     }
 
     runAction(action, successMessage, options);
+  }
+
+  function runEmailTest(action: "send-test-weekly-email" | "send-test-reminder-email") {
+    setError(null);
+    setSuccess(null);
+    setEmailSendResults([]);
+
+    startTransition(async () => {
+      try {
+        const result = await postDevAction({ action });
+        const results = Array.isArray(result.results) ? result.results : [];
+        setEmailSendResults(results);
+        setSuccess(`${result.sent ?? 0} envoyé(s), ${result.failed ?? 0} refusé(s), ${result.skipped ?? 0} ignoré(s).`);
+      } catch (caughtError) {
+        setError(caughtError instanceof Error ? caughtError.message : "Erreur email inconnue.");
+      }
+    });
   }
 
   return (
@@ -335,27 +353,45 @@ export function DevToolsPanel({
                 </Button>
                 <Button
                   disabled={pending}
-                  onClick={() =>
-                    runAction(async () => {
-                      await postDevAction({ action: "send-test-weekly-email" });
-                    }, "Emails hebdomadaires de test envoyés.")
-                  }
+                  onClick={() => runEmailTest("send-test-weekly-email")}
                 >
                   <Send className="mr-2 h-4 w-4" />
                   Tester email hebdomadaire
                 </Button>
                 <Button
                   disabled={pending}
-                  onClick={() =>
-                    runAction(async () => {
-                      await postDevAction({ action: "send-test-reminder-email" });
-                    }, "Rappels d’oubli de test envoyés.")
-                  }
+                  onClick={() => runEmailTest("send-test-reminder-email")}
                 >
                   <Send className="mr-2 h-4 w-4" />
                   Tester rappel oubli
                 </Button>
               </div>
+              {emailSendResults.length > 0 ? (
+                <div className="mt-5 space-y-3">
+                  {emailSendResults.map((item) => (
+                    <div
+                      key={`${item.profileSlug}-${item.subject}`}
+                      className="rounded-[20px] border border-white/10 bg-slate-950/50 p-4 text-sm"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-semibold text-white">{item.firstName}</p>
+                        <span className={
+                          item.status === "sent"
+                            ? "text-emerald-300"
+                            : item.status === "failed"
+                              ? "text-red-300"
+                              : "text-amber-200"
+                        }>
+                          {item.status === "sent" ? "Envoyé" : item.status === "failed" ? "Refusé" : "Ignoré"}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-slate-400">À : {item.to || "non configuré"}</p>
+                      {item.id ? <p className="mt-1 text-slate-400">Resend id : {item.id}</p> : null}
+                      {item.error ? <p className="mt-1 text-red-300">{item.error}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <div className="mt-5 space-y-4">
                 {previewItems.length > 0 ? (
                   previewItems.map((item) => (

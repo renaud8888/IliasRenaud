@@ -70,6 +70,13 @@ export interface WeeklyPoint {
   theoreticalWeight: number;
 }
 
+export interface DailyPoint {
+  date: string;
+  label: string;
+  weight: number;
+  theoreticalWeight: number;
+}
+
 export interface ParticipantDashboard {
   id: string;
   slug: PersonSlug;
@@ -84,7 +91,7 @@ export interface ParticipantDashboard {
   status: ProgressStatus;
   gaugeColor: string;
   messagePoolSize: number;
-  chart: WeeklyPoint[];
+  chart: DailyPoint[];
   history: Array<{
     weekLabel: string;
     averageWeight: number;
@@ -169,6 +176,16 @@ export interface DevEmailDryRunItem {
   subject: string;
   reason: string;
   html: string;
+}
+
+export interface DevEmailSendResult {
+  profileSlug: PersonSlug;
+  firstName: string;
+  to: string;
+  subject: string;
+  status: "sent" | "failed" | "skipped";
+  id: string | null;
+  error: string | null;
 }
 
 export interface DevSnapshot {

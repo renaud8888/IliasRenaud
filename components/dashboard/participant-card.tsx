@@ -85,9 +85,9 @@ export function ParticipantCard({
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-slate-400" />
               <div>
-                <p className="section-title">Courbe hebdomadaire</p>
+                <p className="section-title">Courbe quotidienne</p>
                 <p className="mt-1 text-sm text-slate-300">
-                  Réel contre trajectoire idéale, avec la différence visible d’un coup d’œil.
+                  Pesées jour par jour contre trajectoire idéale, avec la différence visible d’un coup d’œil.
                 </p>
               </div>
             </div>

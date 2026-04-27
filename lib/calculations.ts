@@ -1,5 +1,6 @@
 import { differenceInCalendarDays, isAfter, isBefore } from "date-fns";
 import {
+  formatDayLabel,
   getPeriodProgressPct,
   getWeeklyBuckets,
   toDateString,
@@ -7,6 +8,7 @@ import {
   parseDateString
 } from "@/lib/date";
 import type {
+  DailyPoint,
   GlobalSettingsRecord,
   ParticipantDashboard,
   ProfileRecord,
@@ -77,7 +79,7 @@ export function buildParticipantDashboard(params: {
   const { profile, settings, entries, messagePoolSize, currentDate } = params;
   const weeklyBuckets = getWeeklyBuckets(settings.start_date, settings.end_date, currentDate);
 
-  const chart: WeeklyPoint[] = weeklyBuckets.map((bucket) => {
+  const weeklyChart: WeeklyPoint[] = weeklyBuckets.map((bucket) => {
     const bucketEntries = entries.filter(
       (entry) =>
         entry.entry_date >= toDateString(bucket.clampedStart) &&
@@ -108,13 +110,44 @@ export function buildParticipantDashboard(params: {
     };
   });
 
-  const history = chart
+  const history = weeklyChart
     .filter((point) => point.averageWeight !== null)
     .map((point) => ({
       weekLabel: point.label,
       averageWeight: point.averageWeight as number
     }))
     .reverse();
+
+  const dailyEntriesByDate = entries
+    .filter((entry) => entry.entry_date >= settings.start_date && entry.entry_date <= toDateString(currentDate))
+    .reduce<Record<string, WeightEntryRecord[]>>((acc, entry) => {
+      acc[entry.entry_date] ??= [];
+      acc[entry.entry_date].push(entry);
+      return acc;
+    }, {});
+
+  const chart: DailyPoint[] = Object.entries(dailyEntriesByDate)
+    .map(([date, dayEntries]) => {
+      const day = parseDateString(date);
+      const weight = round(
+        dayEntries.reduce((sum, entry) => sum + Number(entry.weight_kg), 0) / dayEntries.length,
+        1
+      );
+
+      return {
+        date,
+        label: formatDayLabel(day),
+        weight,
+        theoreticalWeight: calculateTheoreticalWeight(
+          Number(profile.start_weight),
+          Number(profile.target_weight),
+          settings.start_date,
+          settings.end_date,
+          day
+        )
+      };
+    })
+    .sort((left, right) => left.date.localeCompare(right.date));
 
   const latestWeekly = history[0];
   const currentWeeklyWeight = latestWeekly?.averageWeight ?? Number(profile.start_weight);

@@ -124,6 +124,10 @@ export function formatWeekLabel(weekStart: Date, weekEnd: Date) {
   })}`;
 }
 
+export function formatDayLabel(date: Date) {
+  return format(date, "d MMM", { locale: fr });
+}
+
 export function isWithinRecentDays(entryDate: string, days: number, today: Date) {
   const entry = parseDateString(entryDate);
   const floor = addDays(today, -(days - 1));

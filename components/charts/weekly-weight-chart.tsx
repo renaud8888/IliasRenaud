@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
-import type { WeeklyPoint } from "@/lib/types";
+import type { DailyPoint } from "@/lib/types";
 import { formatWeight } from "@/lib/utils";
 
 export function WeeklyWeightChart({
@@ -18,15 +18,14 @@ export function WeeklyWeightChart({
   accentColor,
   slug
 }: Readonly<{
-  data: WeeklyPoint[];
+  data: DailyPoint[];
   accentColor: string;
   slug: "ilias" | "renaud" | "kamran";
 }>) {
   const chartData = data.map((item) => ({
     ...item,
-    actualWeight: item.averageWeight ?? undefined,
-    difference:
-      typeof item.averageWeight === "number" ? Number((item.averageWeight - item.theoreticalWeight).toFixed(1)) : null
+    actualWeight: item.weight,
+    difference: Number((item.weight - item.theoreticalWeight).toFixed(1))
   }));
   const gradientId = `actual-fill-${slug}`;
   const lineId = `line-fill-${slug}`;
@@ -62,7 +61,7 @@ export function WeeklyWeightChart({
 
               return [formatWeight(Number(value)), name === "actualWeight" ? "Réel" : "Théorique"];
             }}
-            labelFormatter={(label) => `Semaine ${label}`}
+            labelFormatter={(label) => `Pesée du ${label}`}
           />
           <Area
             type="monotone"
