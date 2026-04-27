@@ -29,7 +29,7 @@ export function AppShell({
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-white/8 bg-slate-950/50 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-8">
+        <div className="mx-auto flex max-w-[1800px] items-center justify-between gap-4 px-4 py-4 md:px-8">
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-white/8 p-3 text-orange-300">
               <Trophy className="h-5 w-5" />
@@ -65,7 +65,7 @@ export function AppShell({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">{children}</main>
+      <main className="mx-auto max-w-[1800px] px-4 py-6 md:px-8 md:py-8">{children}</main>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Scale } from "lucide-react";
+import { CalendarDays, CheckCircle2, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import type { PersonSlug } from "@/lib/types";
@@ -21,6 +21,7 @@ export function WeightEntryForm({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [entryDate, setEntryDate] = useState(defaultDate);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -33,6 +34,12 @@ export function WeightEntryForm({
     const timer = window.setTimeout(() => setSuccess(null), 2200);
     return () => window.clearTimeout(timer);
   }, [success]);
+
+  useEffect(() => {
+    if (open) {
+      setEntryDate(defaultDate);
+    }
+  }, [defaultDate, open]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -81,7 +88,7 @@ export function WeightEntryForm({
             }}
           >
             <Scale className="h-5 w-5" />
-            Ajouter la pesée du jour
+            Ajouter une pesée
           </Button>
         </div>
       </div>
@@ -92,14 +99,16 @@ export function WeightEntryForm({
           className="space-y-4"
         >
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-200" htmlFor={`${profileSlug}-date`}>
-              Date
+            <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-200" htmlFor={`${profileSlug}-date`}>
+              <CalendarDays className="h-4 w-4 text-slate-400" />
+              Date de la pesée
             </label>
             <input
               id={`${profileSlug}-date`}
               name="entryDate"
               type="date"
-              defaultValue={defaultDate}
+              value={entryDate}
+              onChange={(event) => setEntryDate(event.target.value)}
               className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white outline-none ring-0"
               required
             />

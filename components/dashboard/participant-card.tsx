@@ -45,7 +45,7 @@ export function ParticipantCard({
             <StatusBadge status={participant.status} />
           </div>
 
-          <div className="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
+          <div className="grid gap-8 min-[1700px]:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]">
             <ProgressGauge
               value={participant.realProgressPct}
               theoretical={participant.theoreticalProgressPct}
@@ -54,18 +54,18 @@ export function ParticipantCard({
             />
 
             <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 min-[1700px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <div className="rounded-[28px] bg-white/[0.05] p-5 md:p-6">
                   <p className="section-title">Poids de référence</p>
-                  <p className="mt-3 font-[var(--font-heading)] text-5xl font-bold text-white">
+                  <p className="mt-3 break-words font-[var(--font-heading)] text-5xl font-bold leading-none text-white">
                     {formatWeight(participant.currentWeeklyWeight)}
                   </p>
                   <p className="mt-3 text-sm text-slate-400">{participant.latestWeeklyLabel}</p>
                 </div>
                 <div className="rounded-[28px] bg-white/[0.05] p-5 md:p-6">
                   <p className="section-title">Cap final</p>
-                  <div className="mt-3 flex items-center gap-3">
-                    <span className="font-[var(--font-heading)] text-5xl font-bold text-white">
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <span className="break-words font-[var(--font-heading)] text-5xl font-bold leading-none text-white">
                       {formatWeight(participant.targetWeight)}
                     </span>
                     <ArrowRight className="h-5 w-5 text-slate-500" />

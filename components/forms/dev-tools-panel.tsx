@@ -12,13 +12,12 @@ import {
   RefreshCcw,
   RotateCcw,
   Send,
-  Sparkles,
   Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SimulationBadge } from "@/components/ui/simulation-badge";
-import type { AdminPayload, AppDateContext, DevEmailDryRunItem, DevScenarioDefinition } from "@/lib/types";
+import type { AdminPayload, AppDateContext, DevEmailDryRunItem } from "@/lib/types";
 
 function toDateTimeLocalValue(value: string | null) {
   if (!value) {
@@ -143,7 +142,7 @@ export function DevToolsPanel({
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6">
         <Card>
           <div className="flex items-start gap-3">
             <Clock4 className="mt-1 h-5 w-5 text-cyan-300" />
@@ -198,41 +197,6 @@ export function DevToolsPanel({
                     Revenir à la date réelle
                   </Button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-start gap-3">
-            <Sparkles className="mt-1 h-5 w-5 text-emerald-300" />
-            <div className="w-full">
-              <p className="section-title">Scénarios de test</p>
-              <h3 className="mt-2 font-[var(--font-heading)] text-2xl font-bold">Injection en un clic</h3>
-              <div className="mt-5 grid gap-3">
-                {runtime.scenarios.map((scenario: DevScenarioDefinition) => (
-                  <button
-                    key={scenario.key}
-                    type="button"
-                    className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4 text-left transition hover:bg-white/[0.08]"
-                    disabled={pending}
-                    onClick={() =>
-                      runAction(async () => {
-                        const result = await postDevAction({
-                          action: "apply-scenario",
-                          scenarioKey: scenario.key
-                        });
-
-                        if (scenario.key === "scenario-h" && result?.scenario) {
-                          setSimulationEnabled(true);
-                        }
-                      }, `${scenario.title} injecté. Recharge visuelle appliquée.`, { refresh: true })
-                    }
-                  >
-                    <p className="font-semibold text-white">{scenario.title}</p>
-                    <p className="mt-1 text-sm text-slate-400">{scenario.description}</p>
-                  </button>
-                ))}
               </div>
             </div>
           </div>

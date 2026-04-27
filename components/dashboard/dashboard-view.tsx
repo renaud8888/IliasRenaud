@@ -69,7 +69,7 @@ export function DashboardView({
         </div>
       </Card>
 
-      <div className="grid gap-8 xl:grid-cols-2">
+      <div className="grid gap-8 2xl:grid-cols-2">
         {participants.map((participant) => (
           <ParticipantCard key={participant.id} participant={participant} today={today} />
         ))}
