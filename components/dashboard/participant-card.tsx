@@ -76,19 +76,20 @@ export function ParticipantCard({
                 {isLoss ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
                 <span>Objectif : {goalLabel.replace("Objectif ", "")}</span>
               </div>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-bold text-white">
-                  <Activity className="h-4 w-4" style={{ color: theme.ring }} />
-                  {summary}
-                </p>
-                <SportEntryForm
-                  profileSlug={participant.slug}
-                  todaySport={participant.todaySport}
-                  accentColor={theme.ring}
-                />
-              </div>
             </div>
             <StatusBadge status={participant.status} />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-sm font-bold text-white">
+              <Activity className="h-4 w-4" style={{ color: theme.ring }} />
+              {summary}
+            </p>
+            <SportEntryForm
+              profileSlug={participant.slug}
+              todaySport={participant.todaySport}
+              accentColor={theme.ring}
+            />
           </div>
 
           <WeightEntryForm
