@@ -8,21 +8,44 @@ import { Modal } from "@/components/ui/modal";
 import { SPORT_ACTIVITY_TYPES } from "@/lib/constants";
 import type { PersonSlug } from "@/lib/types";
 
+const KG_OPTIONS = Array.from({ length: 221 }, (_, index) => index + 30);
+const DECIMAL_OPTIONS = Array.from({ length: 10 }, (_, index) => index);
+
+function splitWeight(value: number) {
+  const rounded = Math.round(value * 10) / 10;
+  const kg = Math.floor(rounded);
+  const decimal = Math.round((rounded - kg) * 10);
+
+  if (decimal === 10) {
+    return { kg: kg + 1, decimal: 0 };
+  }
+
+  return {
+    kg: Math.min(Math.max(kg, 30), 250),
+    decimal
+  };
+}
+
 export function WeightEntryForm({
   profileSlug,
   firstName,
   defaultDate,
+  defaultWeight,
   accentColor
 }: Readonly<{
   profileSlug: PersonSlug;
   firstName: string;
   defaultDate: string;
+  defaultWeight: number;
   accentColor: string;
 }>) {
   const router = useRouter();
+  const initialWeight = splitWeight(defaultWeight);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [entryDate, setEntryDate] = useState(defaultDate);
+  const [weightKg, setWeightKg] = useState(initialWeight.kg);
+  const [weightDecimal, setWeightDecimal] = useState(initialWeight.decimal);
   const [sportDone, setSportDone] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -39,10 +62,13 @@ export function WeightEntryForm({
 
   useEffect(() => {
     if (open) {
+      const nextWeight = splitWeight(defaultWeight);
       setEntryDate(defaultDate);
+      setWeightKg(nextWeight.kg);
+      setWeightDecimal(nextWeight.decimal);
       setSportDone(false);
     }
-  }, [defaultDate, open]);
+  }, [defaultDate, defaultWeight, open]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -50,7 +76,7 @@ export function WeightEntryForm({
     const payload = {
       profileSlug,
       entryDate: String(formData.get("entryDate")),
-      weightKg: Number(formData.get("weightKg")),
+      weightKg: String(formData.get("weightKg")),
       sportDone: String(formData.get("sportDone")) === "true",
       sportActivityType: formData.get("sportActivityType") ? String(formData.get("sportActivityType")) : null,
       sportNote: formData.get("sportNote") ? String(formData.get("sportNote")) : null
@@ -120,20 +146,40 @@ export function WeightEntryForm({
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-200" htmlFor={`${profileSlug}-weight`}>
+            <label className="mb-2 block text-sm font-semibold text-slate-200" htmlFor={`${profileSlug}-weight-kg`}>
               Poids du jour
             </label>
             <input
-              id={`${profileSlug}-weight`}
               name="weightKg"
-              type="number"
-              step="0.1"
-              min="30"
-              max="250"
-              placeholder="Ex. 114.8"
-              className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white outline-none ring-0"
-              required
+              type="hidden"
+              value={`${weightKg}.${weightDecimal}`}
+              readOnly
             />
+            <div className="grid grid-cols-[1fr_auto_0.8fr] items-center gap-2 rounded-[22px] border border-white/10 bg-white/[0.04] p-3">
+              <select
+                id={`${profileSlug}-weight-kg`}
+                value={weightKg}
+                onChange={(event) => setWeightKg(Number(event.target.value))}
+                className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-3 py-3 text-center text-lg font-extrabold text-white outline-none"
+              >
+                {KG_OPTIONS.map((kg) => (
+                  <option key={kg} value={kg}>{kg}</option>
+                ))}
+              </select>
+              <span className="text-2xl font-black text-white">,</span>
+              <select
+                value={weightDecimal}
+                onChange={(event) => setWeightDecimal(Number(event.target.value))}
+                className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-3 py-3 text-center text-lg font-extrabold text-white outline-none"
+              >
+                {DECIMAL_OPTIONS.map((decimal) => (
+                  <option key={decimal} value={decimal}>{decimal}</option>
+                ))}
+              </select>
+            </div>
+            <p className="mt-2 text-xs font-medium text-slate-400">
+              Prérempli avec la dernière pesée enregistrée.
+            </p>
           </div>
           <div className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
             <div className="mb-3 flex items-center gap-2">

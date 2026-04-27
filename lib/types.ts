@@ -135,6 +135,7 @@ export interface ParticipantDashboard {
   goalType: GoalType;
   startWeight: number;
   targetWeight: number;
+  latestWeight: number;
   currentWeeklyWeight: number;
   latestWeeklyLabel: string;
   realProgressPct: number;

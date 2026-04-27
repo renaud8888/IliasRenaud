@@ -96,6 +96,7 @@ export function ParticipantCard({
             profileSlug={participant.slug}
             firstName={participant.firstName}
             defaultDate={today}
+            defaultWeight={participant.latestWeight}
             accentColor={theme.ring}
           />
 

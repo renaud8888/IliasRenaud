@@ -179,6 +179,7 @@ export function buildParticipantDashboard(params: {
     .sort((left, right) => left.date.localeCompare(right.date));
 
   const latestWeekly = history[0];
+  const latestEntry = [...entries].sort((left, right) => right.entry_date.localeCompare(left.entry_date))[0];
   const currentWeeklyWeight = latestWeekly?.averageWeight ?? Number(profile.start_weight);
   const theoreticalProgressPct = clamp(
     getPeriodProgressPct(settings.start_date, settings.end_date, currentDate),
@@ -222,6 +223,7 @@ export function buildParticipantDashboard(params: {
     goalType: profile.goal_type,
     startWeight: Number(profile.start_weight),
     targetWeight: Number(profile.target_weight),
+    latestWeight: latestEntry ? Number(latestEntry.weight_kg) : Number(profile.start_weight),
     currentWeeklyWeight,
     latestWeeklyLabel: latestWeekly?.weekLabel ?? "Aucune semaine validée",
     realProgressPct,
