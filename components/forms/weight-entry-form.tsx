@@ -78,17 +78,17 @@ export function WeightEntryForm({
 
   return (
     <>
-      <div className="sticky bottom-3 z-20 mt-2 md:static">
-        <div className="rounded-[28px] border border-white/10 bg-slate-950/75 p-2 shadow-[0_18px_40px_rgba(2,6,23,0.45)] backdrop-blur-xl">
+      <div className="z-20">
+        <div className="rounded-[24px] border border-white/10 bg-slate-950/70 p-2 shadow-[0_14px_34px_rgba(2,6,23,0.38)] backdrop-blur-xl">
           <Button
-            className="w-full gap-2 rounded-[22px] py-4 text-base text-white"
+            className="w-full gap-2 rounded-[20px] py-4 text-base font-extrabold text-white shadow-[0_0_24px_rgba(255,255,255,0.08)]"
             onClick={() => setOpen(true)}
             style={{
               background: `linear-gradient(135deg, ${accentColor}CC 0%, ${accentColor} 100%)`
             }}
           >
             <Scale className="h-5 w-5" />
-            Ajouter une pesée
+            Remplir la pesée
           </Button>
         </div>
       </div>

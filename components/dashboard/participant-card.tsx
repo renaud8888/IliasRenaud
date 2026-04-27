@@ -83,6 +83,13 @@ export function ParticipantCard({
             <StatusBadge status={participant.status} />
           </div>
 
+          <WeightEntryForm
+            profileSlug={participant.slug}
+            firstName={participant.firstName}
+            defaultDate={today}
+            accentColor={theme.ring}
+          />
+
           <div className="rounded-[28px] border border-white/10 bg-slate-950/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-5">
             <div className="grid gap-5 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:items-center">
               <ProgressGauge
@@ -188,12 +195,6 @@ export function ParticipantCard({
 
           <HistoryStrip participant={participant} />
 
-          <WeightEntryForm
-            profileSlug={participant.slug}
-            firstName={participant.firstName}
-            defaultDate={today}
-            accentColor={theme.ring}
-          />
         </div>
       </div>
     </Card>
