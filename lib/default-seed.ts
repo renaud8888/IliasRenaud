@@ -12,12 +12,12 @@ export const DEFAULT_GLOBAL_SETTINGS = {
 
 export const DEFAULT_PROFILE_CONFIG = {
   ilias: {
-    start_weight: 116,
+    start_weight: 110.3,
     target_weight: 105,
     accent_color: "#38bdf8"
   },
   renaud: {
-    start_weight: 65,
+    start_weight: 64.1,
     target_weight: 70,
     accent_color: "#fb923c"
   },

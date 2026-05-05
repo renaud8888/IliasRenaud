@@ -144,8 +144,8 @@ Le fichier [.env.example](/Users/Renaud_Lothaire/Downloads/IliasRenaud/.env.exam
 
 Le seed configure immédiatement:
 
-- Ilias: départ 116 kg, objectif 105 kg
-- Renaud: départ 65 kg, objectif 70 kg
+- Ilias: départ 110.3 kg, objectif 105 kg
+- Renaud: départ 64.1 kg, objectif 70 kg
 - Kamran: départ 78 kg, objectif 84 kg
 - période du `2026-05-05` au `2026-08-31`
 - 20 messages motivants minimum par personne
