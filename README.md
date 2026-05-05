@@ -32,7 +32,7 @@ Application web privée, mobile-first, pour suivre une transformation de poids e
   - corriger ou supprimer une entrée quotidienne
   - éditer les messages motivants stockés en base
 - Cron hebdomadaire pour les emails du lundi
-- Cron quotidien pour les rappels après 3 jours d’oubli, avec anti-spam via logs
+- Cron quotidien pour les rappels de pesée oubliée la veille, avec anti-spam via logs
 
 ## Arborescence
 
@@ -147,7 +147,7 @@ Le seed configure immédiatement:
 - Ilias: départ 116 kg, objectif 105 kg
 - Renaud: départ 65 kg, objectif 70 kg
 - Kamran: départ 78 kg, objectif 84 kg
-- période du `2026-05-01` au `2026-08-31`
+- période du `2026-05-05` au `2026-08-31`
 - 20 messages motivants minimum par personne
 
 ## Logique métier

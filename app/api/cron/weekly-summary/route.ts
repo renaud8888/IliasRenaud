@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    await sendWeeklySummaryEmails();
-    return NextResponse.json({ success: true });
+    const result = await sendWeeklySummaryEmails();
+    return NextResponse.json({ success: true, ...result });
   } catch (error) {
     if (error instanceof Response) {
       return error;

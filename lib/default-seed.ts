@@ -1,7 +1,7 @@
 import type { DevScenarioDefinition } from "@/lib/types";
 
 export const DEFAULT_GLOBAL_SETTINGS = {
-  start_date: "2026-05-01",
+  start_date: "2026-05-05",
   end_date: "2026-08-31",
   status_tolerance_pct: 7.5,
   reminder_cooldown_days: 4,

@@ -21,7 +21,10 @@ export async function PATCH(
       return error;
     }
 
-    return NextResponse.json({ error: "Correction impossible." }, { status: 400 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Correction impossible." },
+      { status: 400 }
+    );
   }
 }
 

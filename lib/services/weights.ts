@@ -2,6 +2,15 @@ import { randomInt } from "node:crypto";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import type { PersonSlug, SportActivityType, WeightMutationResponse } from "@/lib/types";
 
+function assertEntryDateWithinChallenge(entryDate: string, settings: {
+  start_date: string;
+  end_date: string;
+}) {
+  if (entryDate < settings.start_date || entryDate > settings.end_date) {
+    throw new Error(`La date doit être comprise entre le ${settings.start_date} et le ${settings.end_date}.`);
+  }
+}
+
 export async function upsertWeightEntry(params: {
   profileSlug: PersonSlug;
   entryDate: string;
@@ -11,15 +20,28 @@ export async function upsertWeightEntry(params: {
   sportNote?: string | null;
 }): Promise<WeightMutationResponse> {
   const supabase = getSupabaseAdmin();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("slug", params.profileSlug)
-    .single();
+  const [{ data: profile }, { data: settings }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id")
+      .eq("slug", params.profileSlug)
+      .single(),
+    supabase
+      .from("global_settings")
+      .select("start_date,end_date")
+      .eq("id", 1)
+      .single()
+  ]);
 
   if (!profile) {
     throw new Error("Participant introuvable.");
   }
+
+  if (!settings) {
+    throw new Error("Configuration globale introuvable.");
+  }
+
+  assertEntryDateWithinChallenge(params.entryDate, settings);
 
   const { error } = await supabase.from("weight_entries").upsert(
     {
@@ -66,6 +88,18 @@ export async function updateWeightEntry(entryId: string, params: {
   sportNote?: string | null;
 }) {
   const supabase = getSupabaseAdmin();
+  const { data: settings } = await supabase
+    .from("global_settings")
+    .select("start_date,end_date")
+    .eq("id", 1)
+    .single();
+
+  if (!settings) {
+    throw new Error("Configuration globale introuvable.");
+  }
+
+  assertEntryDateWithinChallenge(params.entryDate, settings);
+
   const { error } = await supabase
     .from("weight_entries")
     .update({

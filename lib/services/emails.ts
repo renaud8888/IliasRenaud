@@ -9,6 +9,13 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getDashboardData, getBaseData } from "@/lib/services/dashboard";
 import type { ParticipantDashboard, PersonSlug } from "@/lib/types";
 
+function isDateWithinChallengePeriod(dateString: string, settings: {
+  start_date: string;
+  end_date: string;
+}) {
+  return dateString >= settings.start_date && dateString <= settings.end_date;
+}
+
 async function logEmail(params: {
   profileId: string;
   emailType: "weekly_summary" | "missed_entry_reminder";
@@ -47,10 +54,17 @@ async function sendEmailOrThrow(params: {
 export async function sendWeeklySummaryEmails() {
   const env = getEmailEnv();
   const dashboard = await getDashboardData();
-  const { profiles, messages } = await getBaseData();
+  const { settings, profiles, messages } = await getBaseData();
   const currentAppDate = parseDateString(dashboard.dateContext.currentDate);
+  const currentDateString = toDateString(currentAppDate);
+
+  if (!isDateWithinChallengePeriod(currentDateString, settings)) {
+    return { sent: 0, skipped: true, reason: "outside_challenge_period" };
+  }
+
   const currentWeekStart = `${toDateString(startOfWeek(currentAppDate, { weekStartsOn: 1 }))}T00:00:00`;
   const supabase = getSupabaseAdmin();
+  let sentCount = 0;
 
   for (const participant of dashboard.participants) {
     const counterpart = dashboard.participants.find((item) => item.slug !== participant.slug);
@@ -84,13 +98,13 @@ export async function sendWeeklySummaryEmails() {
       from: env.RESEND_FROM_EMAIL,
       to: recipient,
       subject: `Résumé hebdo - ${participant.firstName}`,
-        html: buildWeeklySummaryEmail({
-          participant,
-          counterpart,
-          motivation,
-          currentDateLabel: format(currentAppDate, "d MMMM yyyy", { locale: fr })
-        })
-      });
+      html: buildWeeklySummaryEmail({
+        participant,
+        counterpart,
+        motivation,
+        currentDateLabel: format(currentAppDate, "d MMMM yyyy", { locale: fr })
+      })
+    });
 
     if (profile) {
       await logEmail({
@@ -98,7 +112,11 @@ export async function sendWeeklySummaryEmails() {
         emailType: "weekly_summary"
       });
     }
+
+    sentCount += 1;
   }
+
+  return { sent: sentCount };
 }
 
 async function hasReminderForMissedDate(profileId: string, missedEntryDate: string) {
@@ -132,6 +150,11 @@ export async function sendMissedEntryReminders() {
 
   const today = await getCurrentAppDate();
   const missedEntryDate = toDateString(subDays(today, 1));
+
+  if (!isDateWithinChallengePeriod(missedEntryDate, settings)) {
+    return { sent: 0, skipped: true, reason: "outside_challenge_period" };
+  }
+
   let sentCount = 0;
 
   for (const profile of profiles) {
@@ -183,7 +206,7 @@ export function buildWeeklyEmailPreview(participant: ParticipantDashboard) {
     participant,
     motivation: "Tu avances mieux quand tu restes simple, régulier et propre.",
     counterpart: undefined,
-    currentDateLabel: format(parseDateString("2026-05-01"), "d MMMM yyyy", { locale: fr })
+    currentDateLabel: format(parseDateString("2026-05-05"), "d MMMM yyyy", { locale: fr })
   });
 }
 

@@ -17,6 +17,9 @@ export async function POST(request: NextRequest) {
       return error;
     }
 
-    return NextResponse.json({ error: "Enregistrement impossible." }, { status: 400 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Enregistrement impossible." },
+      { status: 400 }
+    );
   }
 }
