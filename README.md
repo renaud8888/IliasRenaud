@@ -125,7 +125,6 @@ Le fichier [.env.example](/Users/Renaud_Lothaire/Downloads/IliasRenaud/.env.exam
 - `APP_SIMULATED_NOW`: date ISO simulée injectée depuis l’environnement
 - `RENAUD_EMAIL`: email de destination de Renaud
 - `ILIAS_EMAIL`: email de destination de Ilias
-- `KAMRAN_EMAIL`: email de destination de Kamran
 - `RESEND_API_KEY`: clé API Resend
 - `RESEND_FROM_EMAIL`: expéditeur Resend
 - `SUPABASE_URL`: URL du projet Supabase
@@ -140,13 +139,12 @@ Le fichier [.env.example](/Users/Renaud_Lothaire/Downloads/IliasRenaud/.env.exam
 3. Exécuter d’abord [sql/schema.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/schema.sql).
 4. Exécuter ensuite [sql/seed.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/seed.sql).
 5. Si la base existait déjà avant l’ajout des outils de simulation, exécuter aussi [sql/migrations/20260421_simulation_tools.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/migrations/20260421_simulation_tools.sql).
-6. Si la base existait déjà avant l’ajout de Kamran, exécuter aussi [sql/migrations/20260421_add_kamran.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/migrations/20260421_add_kamran.sql).
+6. Si la base contenait encore l’ancien troisième profil, exécuter aussi [sql/migrations/20260513_remove_third_profile.sql](/Users/Renaud_Lothaire/Downloads/IliasRenaud/sql/migrations/20260513_remove_third_profile.sql).
 
 Le seed configure immédiatement:
 
 - Ilias: départ 110.3 kg, objectif 105 kg
 - Renaud: départ 64.1 kg, objectif 70 kg
-- Kamran: départ 78 kg, objectif 84 kg
 - période du `2026-05-05` au `2026-08-31`
 - 20 messages motivants minimum par personne
 
@@ -329,7 +327,7 @@ curl -H "Authorization: Bearer votre-secret" http://localhost:3000/api/cron/chec
 
 ### Changer les emails
 
-- Modifier `ILIAS_EMAIL`, `RENAUD_EMAIL` et `KAMRAN_EMAIL` dans l’environnement
+- Modifier `ILIAS_EMAIL` et `RENAUD_EMAIL` dans l’environnement
 
 ### Changer le mot de passe global
 

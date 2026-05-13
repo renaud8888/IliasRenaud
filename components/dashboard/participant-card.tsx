@@ -37,8 +37,7 @@ export function ParticipantCard({
 }>) {
   const isLoss = participant.goalType === "loss";
   const theme = PERSON_THEME[participant.slug];
-  const goalLabel =
-    participant.slug === "kamran" ? "Objectif prise de masse musculaire" : GOAL_LABELS[participant.goalType];
+  const goalLabel = GOAL_LABELS[participant.goalType];
   const totalDelta = participant.targetWeight - participant.startWeight;
   const currentDelta = participant.currentWeeklyWeight - participant.startWeight;
   const timelinePosition = totalDelta === 0 ? 100 : clamp((currentDelta / totalDelta) * 100, 0, 100);

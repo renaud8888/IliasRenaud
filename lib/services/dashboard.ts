@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from "date-fns";
-import { PERSON_EMAIL_ENV_KEYS } from "@/lib/constants";
+import { ACTIVE_PERSON_SLUGS, PERSON_EMAIL_ENV_KEYS } from "@/lib/constants";
 import { buildParticipantDashboard } from "@/lib/calculations";
 import { DEV_SCENARIOS } from "@/lib/default-seed";
 import { getSerializableAppDateContext, parseDateString } from "@/lib/date";
@@ -36,9 +36,13 @@ export async function getBaseData() {
         .order("created_at", { ascending: true })
     ]);
 
+  const activeProfiles = ((profiles ?? []) as ProfileRecord[]).filter((profile) =>
+    ACTIVE_PERSON_SLUGS.includes(profile.slug)
+  );
+
   return {
     settings: assertData(settings as GlobalSettingsRecord | null, "Configuration globale introuvable."),
-    profiles: (profiles ?? []) as ProfileRecord[],
+    profiles: activeProfiles,
     entries: (entries ?? []) as WeightEntryRecord[],
     messages: (messages ?? []) as MotivationalMessageRecord[]
   };

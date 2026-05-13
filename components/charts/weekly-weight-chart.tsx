@@ -11,6 +11,7 @@ import {
   YAxis
 } from "recharts";
 import type { DailyPoint } from "@/lib/types";
+import type { PersonSlug } from "@/lib/types";
 import { formatWeight } from "@/lib/utils";
 
 export function WeeklyWeightChart({
@@ -20,7 +21,7 @@ export function WeeklyWeightChart({
 }: Readonly<{
   data: DailyPoint[];
   accentColor: string;
-  slug: "ilias" | "renaud" | "kamran";
+  slug: PersonSlug;
 }>) {
   const chartData = data.map((item) => ({
     ...item,

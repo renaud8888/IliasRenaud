@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SPORT_ACTIVITY_TYPES } from "@/lib/constants";
+import { ACTIVE_PERSON_SLUGS, SPORT_ACTIVITY_TYPES } from "@/lib/constants";
 
 const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide.");
 const sportActivitySchema = z.enum(SPORT_ACTIVITY_TYPES);
@@ -46,7 +46,7 @@ function normalizeSportPayload<T extends z.ZodRawShape>(shape: T) {
 }
 
 export const weightInputSchema = normalizeSportPayload({
-  profileSlug: z.enum(["ilias", "renaud", "kamran"]),
+  profileSlug: z.enum(ACTIVE_PERSON_SLUGS),
   entryDate: isoDateSchema,
   weightKg: weightKgSchema
 });
@@ -57,6 +57,6 @@ export const adminWeightUpdateSchema = normalizeSportPayload({
 });
 
 export const sportUpdateSchema = normalizeSportPayload({
-  profileSlug: z.enum(["ilias", "renaud", "kamran"]),
+  profileSlug: z.enum(ACTIVE_PERSON_SLUGS),
   entryDate: isoDateSchema
 });

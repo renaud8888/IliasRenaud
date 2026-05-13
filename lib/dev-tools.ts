@@ -9,6 +9,7 @@ import {
   DEFAULT_PROFILE_CONFIG,
   DEV_SCENARIOS
 } from "@/lib/default-seed";
+import { ACTIVE_PERSON_SLUGS, PERSON_EMAIL_ENV_KEYS } from "@/lib/constants";
 import {
   getCurrentAppDate,
   getSerializableAppDateContext,
@@ -56,20 +57,12 @@ function getTrendFactor(trend: DevTrendMode, slug: PersonSlug) {
       return 0.62;
     }
 
-    if (slug === "kamran") {
-      return 0.68;
-    }
-
     return 0.74;
   }
 
   if (trend === "ahead") {
     if (slug === "renaud") {
       return 1.18;
-    }
-
-    if (slug === "kamran") {
-      return 1.16;
     }
 
     return 1.08;
@@ -81,10 +74,6 @@ function getTrendFactor(trend: DevTrendMode, slug: PersonSlug) {
 
   if (slug === "ilias") {
     return 0.97;
-  }
-
-  if (slug === "kamran") {
-    return 1.04;
   }
 
   return 1.03;
@@ -333,7 +322,7 @@ export async function restoreInitialConfiguration() {
   await supabase.from("global_settings").update(DEFAULT_GLOBAL_SETTINGS).eq("id", 1);
 
   await Promise.all(
-    (["ilias", "renaud", "kamran"] as const).map(async (slug) => {
+    ACTIVE_PERSON_SLUGS.map(async (slug) => {
       const profile = profileMap[slug];
 
       if (!profile) {
@@ -460,12 +449,7 @@ export async function previewWeeklyEmails(): Promise<DevEmailDryRunItem[]> {
   return dashboard.participants.map((participant) => ({
     profileSlug: participant.slug,
     firstName: participant.firstName,
-    to:
-      participant.slug === "ilias"
-        ? emailEnv.ILIAS_EMAIL
-        : participant.slug === "renaud"
-          ? emailEnv.RENAUD_EMAIL
-          : emailEnv.KAMRAN_EMAIL ?? "",
+    to: emailEnv[PERSON_EMAIL_ENV_KEYS[participant.slug]],
     subject: `Résumé hebdo - ${participant.firstName}`,
     reason: `Résumé hebdomadaire généré pour ${format(parseDateString(dashboard.dateContext.currentDate), "EEEE d MMMM yyyy", { locale: fr })}.`,
     html: buildWeeklySummaryEmail({
@@ -496,12 +480,7 @@ export async function previewMissedReminderEmails(options?: { includeAllProfiles
     .map((profile) => ({
       profileSlug: profile.slug,
       firstName: profile.first_name,
-      to:
-        profile.slug === "ilias"
-          ? emailEnv.ILIAS_EMAIL
-          : profile.slug === "renaud"
-            ? emailEnv.RENAUD_EMAIL
-            : emailEnv.KAMRAN_EMAIL ?? "",
+      to: emailEnv[PERSON_EMAIL_ENV_KEYS[profile.slug]],
       subject: `Rappel pesée - ${profile.first_name}`,
       reason: getReminderReason(profile.first_name),
       html: buildMissedEntryReminderEmail({

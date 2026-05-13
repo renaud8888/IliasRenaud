@@ -7,10 +7,11 @@ export const APP_DESCRIPTION =
 export const TIMEZONE = "Europe/Brussels";
 export const ACCESS_COOKIE_NAME = "site-access";
 
-export const PERSON_EMAIL_ENV_KEYS: Record<PersonSlug, "ILIAS_EMAIL" | "RENAUD_EMAIL" | "KAMRAN_EMAIL"> = {
+export const ACTIVE_PERSON_SLUGS = ["ilias", "renaud"] as const satisfies readonly PersonSlug[];
+
+export const PERSON_EMAIL_ENV_KEYS: Record<PersonSlug, "ILIAS_EMAIL" | "RENAUD_EMAIL"> = {
   ilias: "ILIAS_EMAIL",
-  renaud: "RENAUD_EMAIL",
-  kamran: "KAMRAN_EMAIL"
+  renaud: "RENAUD_EMAIL"
 };
 
 export const PERSON_THEME: Record<
@@ -33,12 +34,6 @@ export const PERSON_THEME: Record<
     panel: "bg-emerald-500/10",
     ring: "#fb923c",
     badge: "bg-orange-500/15 text-orange-100 border-orange-300/30"
-  },
-  kamran: {
-    gradient: "from-fuchsia-400 via-pink-400 to-rose-500",
-    panel: "bg-rose-500/10",
-    ring: "#ec4899",
-    badge: "bg-rose-500/15 text-rose-100 border-rose-300/30"
   }
 };
 
